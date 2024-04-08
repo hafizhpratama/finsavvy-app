@@ -1,7 +1,13 @@
-import './App.css'
+import React from 'react'
+import { BrowserRouter as Router } from 'react-router-dom'
+import DashboardPage from './pages/IndexPage'
 
-function App() {
-  return <h1 className="text-3xl font-bold text-red-600 underline">Simple React Typescript Tailwind Sample</h1>
+const App: React.FC = () => {
+  return (
+    <Router>
+      <DashboardPage />
+    </Router>
+  )
 }
 
 export default App
