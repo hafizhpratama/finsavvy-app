@@ -5,6 +5,7 @@ import { FaDollarSign } from 'react-icons/fa'
 import { Avatar, List, ListItem, ListItemPrefix, ListItemSuffix, Typography } from '@material-tailwind/react'
 import Balance from '../../components/Balance'
 import Card from '../../components/Card'
+import IndexPage from '../IndexPage'
 
 const DashboardPage: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState<string>('week')
@@ -95,87 +96,89 @@ const DashboardPage: React.FC = () => {
 
   return (
     <>
-      <div className="mb-16">
-        <Balance balance={0} />
+      <IndexPage>
+        <div className="mb-16">
+          <Balance balance={0} />
 
-        <Card title="Spending Report">
-          <div className="flex flex-col items-center">
-            {/* Tabs */}
-            <div className="mt-6 flex">
-              <button
-                className={`rounded-bl-lg rounded-tl-lg px-4 py-2 ${selectedTab === 'week' ? 'bg-black text-white' : 'bg-gray-200 text-gray-600'}`}
-                onClick={() => setSelectedTab('week')}
-              >
-                Week
-              </button>
-              <button
-                className={`rounded-br-lg rounded-tr-lg px-4 py-2 ${selectedTab === 'month' ? 'bg-black text-white' : 'bg-gray-200 text-gray-600'}`}
-                onClick={() => setSelectedTab('month')}
-              >
-                Month
-              </button>
+          <Card title="Spending Report">
+            <div className="flex flex-col items-center">
+              {/* Tabs */}
+              <div className="mt-6 flex">
+                <button
+                  className={`rounded-bl-lg rounded-tl-lg px-4 py-2 ${selectedTab === 'week' ? 'bg-black text-white' : 'bg-gray-200 text-gray-600'}`}
+                  onClick={() => setSelectedTab('week')}
+                >
+                  Week
+                </button>
+                <button
+                  className={`rounded-br-lg rounded-tr-lg px-4 py-2 ${selectedTab === 'month' ? 'bg-black text-white' : 'bg-gray-200 text-gray-600'}`}
+                  onClick={() => setSelectedTab('month')}
+                >
+                  Month
+                </button>
+              </div>
+              {/* Spending Report */}
+              <div>
+                <ReactApexChart options={options} series={series} type="bar" height={350} />
+              </div>
             </div>
-            {/* Spending Report */}
+          </Card>
+
+          <Card title="Top Spending">
             <div>
-              <ReactApexChart options={options} series={series} type="bar" height={350} />
+              <List placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
+                {topSpendingData.map((item, index) => (
+                  <ListItem key={index} placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
+                    <ListItemPrefix placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
+                      <Avatar
+                        variant="circular"
+                        alt="candice"
+                        src="https://docs.material-tailwind.com/img/face-1.jpg"
+                        placeholder=""
+                        onPointerEnterCapture={() => {}}
+                        onPointerLeaveCapture={() => {}}
+                      />
+                    </ListItemPrefix>
+                    <div>
+                      <Typography
+                        variant="h6"
+                        color="blue-gray"
+                        placeholder=""
+                        onPointerEnterCapture={() => {}}
+                        onPointerLeaveCapture={() => {}}
+                      >
+                        {item.title}
+                      </Typography>
+                      <Typography
+                        variant="small"
+                        color="gray"
+                        className="font-normal"
+                        placeholder=""
+                        onPointerEnterCapture={() => {}}
+                        onPointerLeaveCapture={() => {}}
+                      >
+                        Rp. {item.amount.toLocaleString()}
+                      </Typography>
+                    </div>
+                    <ListItemSuffix placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
+                      <Typography
+                        variant="small"
+                        color="gray"
+                        className="font-normal"
+                        placeholder=""
+                        onPointerEnterCapture={() => {}}
+                        onPointerLeaveCapture={() => {}}
+                      >
+                        {((item.amount / 500) * 100).toFixed(1)}%
+                      </Typography>
+                    </ListItemSuffix>
+                  </ListItem>
+                ))}
+              </List>
             </div>
-          </div>
-        </Card>
-
-        <Card title="Top Spending">
-          <div>
-            <List placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
-              {topSpendingData.map((item, index) => (
-                <ListItem key={index} placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
-                  <ListItemPrefix placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
-                    <Avatar
-                      variant="circular"
-                      alt="candice"
-                      src="https://docs.material-tailwind.com/img/face-1.jpg"
-                      placeholder=""
-                      onPointerEnterCapture={() => {}}
-                      onPointerLeaveCapture={() => {}}
-                    />
-                  </ListItemPrefix>
-                  <div>
-                    <Typography
-                      variant="h6"
-                      color="blue-gray"
-                      placeholder=""
-                      onPointerEnterCapture={() => {}}
-                      onPointerLeaveCapture={() => {}}
-                    >
-                      {item.title}
-                    </Typography>
-                    <Typography
-                      variant="small"
-                      color="gray"
-                      className="font-normal"
-                      placeholder=""
-                      onPointerEnterCapture={() => {}}
-                      onPointerLeaveCapture={() => {}}
-                    >
-                      Rp. {item.amount.toLocaleString()}
-                    </Typography>
-                  </div>
-                  <ListItemSuffix placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
-                    <Typography
-                      variant="small"
-                      color="gray"
-                      className="font-normal"
-                      placeholder=""
-                      onPointerEnterCapture={() => {}}
-                      onPointerLeaveCapture={() => {}}
-                    >
-                      {((item.amount / 500) * 100).toFixed(1)}%
-                    </Typography>
-                  </ListItemSuffix>
-                </ListItem>
-              ))}
-            </List>
-          </div>
-        </Card>
-      </div>
+          </Card>
+        </div>
+      </IndexPage>
     </>
   )
 }

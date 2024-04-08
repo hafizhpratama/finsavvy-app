@@ -1,11 +1,13 @@
-import React, { useState } from 'react'
+import React, { ReactNode, useState } from 'react'
 import { FaHome, FaDollarSign, FaPlus } from 'react-icons/fa'
-import { Routes, Route, Link, useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { Button, Input, Option, Select, Textarea, Typography } from '@material-tailwind/react'
-import TransactionPage from './transaction/index/TransactionPage'
-import DashboardPage from './index/DashboardPage'
 
-const IndexPage: React.FC = () => {
+interface IndexPageProps {
+  children: ReactNode
+}
+
+const IndexPage: React.FC<IndexPageProps> = ({ children }) => {
   const location = useLocation()
   const [showModal, setShowModal] = useState(false)
 
@@ -19,13 +21,7 @@ const IndexPage: React.FC = () => {
 
   return (
     <div>
-      {/* Main Content */}
-      <div className="inset-0 bg-gray-100 p-4">
-        <Routes>
-          <Route path="/" element={<DashboardPage />} />
-          <Route path="/transaction" element={<TransactionPage />} />
-        </Routes>
-      </div>
+      {children}
 
       {/* Bottom Bar */}
       <div className="fixed bottom-4 left-1/2 z-50 h-16 w-11/12 max-w-lg -translate-x-1/2 rounded-full border border-gray-200 bg-white dark:border-gray-600 dark:bg-gray-700">

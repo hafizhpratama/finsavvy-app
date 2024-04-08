@@ -2,6 +2,7 @@ import { Option, Select, Typography } from '@material-tailwind/react'
 import React, { useState, useEffect } from 'react'
 import Balance from '../../../components/Balance'
 import Card from '../../../components/Card'
+import IndexPage from '../../IndexPage'
 
 interface Transaction {
   id: number
@@ -69,12 +70,12 @@ const TransactionPage: React.FC = () => {
 
   return (
     <>
-      <div className="mb-16">
-        <Balance balance={0} />
+      <IndexPage>
+        <div className="mb-16">
+          <Balance balance={0} />
 
-        <Card title="Filter">
-          <div className="grid grid-cols-2 items-center gap-2">
-            <div>
+          <Card title="Filter">
+            <div className="flex w-full flex-col gap-4 sm:flex-row">
               <Select
                 value={String(selectedMonth)}
                 id="month"
@@ -86,6 +87,7 @@ const TransactionPage: React.FC = () => {
                 placeholder=""
                 onPointerEnterCapture={() => {}}
                 onPointerLeaveCapture={() => {}}
+                className="w-full"
               >
                 {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
                   <Option key={month} value={String(month)}>
@@ -93,8 +95,6 @@ const TransactionPage: React.FC = () => {
                   </Option>
                 ))}
               </Select>
-            </div>
-            <div>
               <Select
                 value={String(selectedYear)}
                 id="year"
@@ -106,6 +106,7 @@ const TransactionPage: React.FC = () => {
                 placeholder=""
                 onPointerEnterCapture={() => {}}
                 onPointerLeaveCapture={() => {}}
+                className="w-full"
               >
                 {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i).map((year) => (
                   <Option key={year} value={String(year)}>
@@ -114,90 +115,90 @@ const TransactionPage: React.FC = () => {
                 ))}
               </Select>
             </div>
-          </div>
-        </Card>
+          </Card>
 
-        <Card title="Flow">
-          <div>
-            <div className="grid grid-cols-2 items-center">
-              <div>
-                <Typography variant="h6" placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
-                  Inflow Total
-                </Typography>
-                <Typography
-                  variant="paragraph"
-                  color="green"
-                  className="font-semibold"
-                  placeholder=""
-                  onPointerEnterCapture={() => {}}
-                  onPointerLeaveCapture={() => {}}
-                >
-                  ${getTotalAmount(inflowTransactions).toFixed(2)}
-                </Typography>
-              </div>
-              <div>
-                <Typography variant="h6" placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
-                  Outflow Total
-                </Typography>
-                <Typography
-                  variant="paragraph"
-                  color="red"
-                  className="font-semibold"
-                  placeholder=""
-                  onPointerEnterCapture={() => {}}
-                  onPointerLeaveCapture={() => {}}
-                >
-                  ${Math.abs(getTotalAmount(outflowTransactions)).toFixed(2)}
-                </Typography>
-              </div>
-            </div>
-          </div>
-        </Card>
-
-        <Card title="Transaction">
-          {Object.entries(groupedTransactions).map(([date, transactions]) => (
-            <div key={date} className="mb-8 border-b border-gray-200">
-              <Typography variant="h6" color="indigo" placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
-                {formatDate(date)}
-              </Typography>
-              <div className="divide-y divide-gray-200">
-                {transactions.map((transaction) => (
-                  <div key={transaction.id} className="flex items-center justify-between py-2">
-                    <div className="flex-1">
-                      <Typography variant="paragraph" placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
-                        {transaction.description}
-                      </Typography>
-                    </div>
-                    <Typography variant="paragraph" placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
-                      ${transaction.amount.toFixed(2)}
-                    </Typography>
-                  </div>
-                ))}
-                <div className="flex items-center justify-between py-2">
-                  <Typography
-                    variant="paragraph"
-                    className="font-semibold"
-                    placeholder=""
-                    onPointerEnterCapture={() => {}}
-                    onPointerLeaveCapture={() => {}}
-                  >
-                    Total
+          <Card title="Flow">
+            <div>
+              <div className="grid grid-cols-2 items-center">
+                <div>
+                  <Typography variant="h6" placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
+                    Inflow Total
                   </Typography>
                   <Typography
                     variant="paragraph"
+                    color="green"
                     className="font-semibold"
                     placeholder=""
                     onPointerEnterCapture={() => {}}
                     onPointerLeaveCapture={() => {}}
                   >
-                    ${getTotalAmount(transactions).toFixed(2)}
+                    ${getTotalAmount(inflowTransactions).toFixed(2)}
+                  </Typography>
+                </div>
+                <div>
+                  <Typography variant="h6" placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
+                    Outflow Total
+                  </Typography>
+                  <Typography
+                    variant="paragraph"
+                    color="red"
+                    className="font-semibold"
+                    placeholder=""
+                    onPointerEnterCapture={() => {}}
+                    onPointerLeaveCapture={() => {}}
+                  >
+                    ${Math.abs(getTotalAmount(outflowTransactions)).toFixed(2)}
                   </Typography>
                 </div>
               </div>
             </div>
-          ))}
-        </Card>
-      </div>
+          </Card>
+
+          <Card title="Transaction">
+            {Object.entries(groupedTransactions).map(([date, transactions]) => (
+              <div key={date} className="mb-8 border-b border-gray-200">
+                <Typography variant="h6" color="indigo" placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
+                  {formatDate(date)}
+                </Typography>
+                <div className="divide-y divide-gray-200">
+                  {transactions.map((transaction) => (
+                    <div key={transaction.id} className="flex items-center justify-between py-2">
+                      <div className="flex-1">
+                        <Typography variant="paragraph" placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
+                          {transaction.description}
+                        </Typography>
+                      </div>
+                      <Typography variant="paragraph" placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
+                        ${transaction.amount.toFixed(2)}
+                      </Typography>
+                    </div>
+                  ))}
+                  <div className="flex items-center justify-between py-2">
+                    <Typography
+                      variant="paragraph"
+                      className="font-semibold"
+                      placeholder=""
+                      onPointerEnterCapture={() => {}}
+                      onPointerLeaveCapture={() => {}}
+                    >
+                      Total
+                    </Typography>
+                    <Typography
+                      variant="paragraph"
+                      className="font-semibold"
+                      placeholder=""
+                      onPointerEnterCapture={() => {}}
+                      onPointerLeaveCapture={() => {}}
+                    >
+                      ${getTotalAmount(transactions).toFixed(2)}
+                    </Typography>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </Card>
+        </div>
+      </IndexPage>
     </>
   )
 }
