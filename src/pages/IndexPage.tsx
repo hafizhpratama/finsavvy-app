@@ -1,7 +1,7 @@
 import React, { ReactNode, useState } from 'react'
 import { FaHome, FaDollarSign, FaPlus } from 'react-icons/fa'
 import { Link, useLocation } from 'react-router-dom'
-import { Button, Input, Option, Select, Textarea, Typography } from '@material-tailwind/react'
+import AddTransactionModal from '../components/Modal/AddTransactionModal'
 
 interface IndexPageProps {
   children: ReactNode
@@ -28,7 +28,7 @@ const IndexPage: React.FC<IndexPageProps> = ({ children }) => {
         <div className="mx-auto grid h-full max-w-lg grid-cols-3">
           <Link
             to="/"
-            className={`group inline-flex flex-col items-center justify-center rounded-s-full px-5 ${location.pathname === '/home' ? 'bg-blue-50' : 'bg-white hover:bg-gray-50'}`}
+            className={`group inline-flex flex-col items-center justify-center rounded-s-full px-5 ${location.pathname === '/' ? 'bg-blue-50' : 'bg-white hover:bg-gray-50'}`}
           >
             <FaHome size={24} className="text-gray-400" />
             <span className="sr-only">Home</span>
@@ -51,84 +51,7 @@ const IndexPage: React.FC<IndexPageProps> = ({ children }) => {
         </div>
       </div>
 
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm">
-          <div className="relative w-2/3 max-w-lg rounded-2xl bg-white">
-            <div className="rounded-t-2xl border-b border-gray-200 px-6 py-4">
-              <Typography
-                variant="h6"
-                color="black"
-                className="font-semibold"
-                placeholder=""
-                onPointerEnterCapture={() => {}}
-                onPointerLeaveCapture={() => {}}
-              >
-                Add Transaction
-              </Typography>
-            </div>
-            <div className="px-6">
-              <div className="py-6">
-                <div className="flex flex-col gap-6">
-                  <Input
-                    crossOrigin={[]}
-                    type="number"
-                    variant="outlined"
-                    label="Total Transaction"
-                    placeholder=""
-                    onPointerEnterCapture={() => {}}
-                    onPointerLeaveCapture={() => {}}
-                  />
-                  <Select
-                    variant="outlined"
-                    label="Select Category"
-                    placeholder=""
-                    onPointerEnterCapture={() => {}}
-                    onPointerLeaveCapture={() => {}}
-                  >
-                    <Option>Material Tailwind HTML</Option>
-                    <Option>Material Tailwind React</Option>
-                    <Option>Material Tailwind Vue</Option>
-                    <Option>Material Tailwind Angular</Option>
-                    <Option>Material Tailwind Svelte</Option>
-                  </Select>
-                  <Textarea
-                    variant="outlined"
-                    label="Note"
-                    placeholder=""
-                    onPointerEnterCapture={() => {}}
-                    onPointerLeaveCapture={() => {}}
-                  />
-                  <Input
-                    type="date"
-                    variant="outlined"
-                    label="Date"
-                    placeholder=""
-                    onPointerEnterCapture={() => {}}
-                    onPointerLeaveCapture={() => {}}
-                    crossOrigin={[]}
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-2 border-t py-4">
-                <Button
-                  variant="outlined"
-                  onClick={closeModal}
-                  placeholder=""
-                  onPointerEnterCapture={() => {}}
-                  onPointerLeaveCapture={() => {}}
-                >
-                  Cancel
-                </Button>
-                <Button type="button" placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
-                  Save
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {showModal && <AddTransactionModal closeModal={closeModal} />}
     </div>
   )
 }

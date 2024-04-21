@@ -15,8 +15,8 @@ const Balance: React.FC<BalanceProps> = ({ balance }) => {
           <FaDollarSign size={20} className="mr-2 text-yellow-600" />
           <Typography
             variant="paragraph"
-            color="gray"
-            className="font-normal"
+            color={balance >= 0 ? 'green' : 'red'}
+            className="font-semibold"
             placeholder=""
             onPointerEnterCapture={() => {}}
             onPointerLeaveCapture={() => {}}

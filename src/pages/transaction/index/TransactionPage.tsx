@@ -3,37 +3,23 @@ import React, { useState, useEffect } from 'react'
 import Balance from '../../../components/Balance'
 import Card from '../../../components/Card'
 import IndexPage from '../../IndexPage'
-
-interface Transaction {
-  id: number
-  date: string
-  amount: number
-  description: string
-}
+import { Transaction } from '../../../interfaces/Transaction'
+import { getTransactionsByUserId } from '../../../services/supabaseService'
+import { useAuth } from '../../../contexts/AuthContext'
 
 const TransactionPage: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1)
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear())
+  const { user } = useAuth()
 
   useEffect(() => {
     const fetchData = async () => {
-      const dummyData: { [key: string]: Transaction[] } = {
-        '2024-03': [
-          { id: 1, date: '2024-03-01', amount: 100, description: 'Groceries' },
-          { id: 2, date: '2024-03-05', amount: 50, description: 'Dinner' },
-          { id: 3, date: '2024-03-10', amount: 200, description: 'Shopping' },
-        ],
-        '2024-04': [
-          { id: 4, date: '2024-04-01', amount: 80, description: 'Breakfast' },
-          { id: 5, date: '2024-04-01', amount: 120, description: 'Lunch' },
-          { id: 6, date: '2024-04-05', amount: 500, description: 'Salary' },
-        ],
-      }
+      const userId = user?.id
+      const data = await getTransactionsByUserId(userId, selectedMonth, selectedYear)
 
-      const selectedMonthKey = `${selectedYear}-${selectedMonth.toString().padStart(2, '0')}`
-      if (dummyData[selectedMonthKey]) {
-        setTransactions(dummyData[selectedMonthKey])
+      if (data) {
+        setTransactions(data)
       } else {
         setTransactions([])
       }
@@ -42,16 +28,20 @@ const TransactionPage: React.FC = () => {
     fetchData()
   }, [selectedMonth, selectedYear])
 
-  const inflowTransactions = transactions.filter((transaction) => transaction.amount > 0)
-  const outflowTransactions = transactions.filter((transaction) => transaction.amount < 0)
+  const inflowTransactions = transactions.filter(
+    (transaction) => transaction.total && transaction.total > 0 && transaction.category_type === 'income',
+  )
+  const outflowTransactions = transactions.filter(
+    (transaction) => transaction.total && transaction.total > 0 && transaction.category_type === 'outcome',
+  )
 
   const getTotalAmount = (transactionList: Transaction[]) => {
-    return transactionList.reduce((total, transaction) => total + transaction.amount, 0)
+    return transactionList.reduce((total, transaction) => total + (transaction.total || 0), 0)
   }
 
   const groupedTransactions: { [key: string]: Transaction[] } = {}
   transactions.forEach((transaction) => {
-    const date = transaction.date
+    const date: string = transaction.date ?? ''
     if (!groupedTransactions[date]) {
       groupedTransactions[date] = []
     }
@@ -68,11 +58,15 @@ const TransactionPage: React.FC = () => {
     return date.toLocaleDateString('en-US', options)
   }
 
+  const getBalance = (inflow: number, outflow: number) => {
+    return inflow - outflow
+  }
+
   return (
     <>
       <IndexPage>
         <div className="mb-16">
-          <Balance balance={0} />
+          <Balance balance={getBalance(getTotalAmount(inflowTransactions), Math.abs(getTotalAmount(outflowTransactions)))} />
 
           <Card title="Filter">
             <div className="flex w-full flex-col gap-4 sm:flex-row">
@@ -132,7 +126,7 @@ const TransactionPage: React.FC = () => {
                     onPointerEnterCapture={() => {}}
                     onPointerLeaveCapture={() => {}}
                   >
-                    ${getTotalAmount(inflowTransactions).toFixed(2)}
+                    Rp. {getTotalAmount(inflowTransactions).toLocaleString()}
                   </Typography>
                 </div>
                 <div>
@@ -147,7 +141,7 @@ const TransactionPage: React.FC = () => {
                     onPointerEnterCapture={() => {}}
                     onPointerLeaveCapture={() => {}}
                   >
-                    ${Math.abs(getTotalAmount(outflowTransactions)).toFixed(2)}
+                    Rp. {Math.abs(getTotalAmount(outflowTransactions)).toLocaleString()}
                   </Typography>
                 </div>
               </div>
@@ -161,15 +155,15 @@ const TransactionPage: React.FC = () => {
                   {formatDate(date)}
                 </Typography>
                 <div className="divide-y divide-gray-200">
-                  {transactions.map((transaction) => (
-                    <div key={transaction.id} className="flex items-center justify-between py-2">
+                  {transactions.map((transaction, index) => (
+                    <div key={index} className="flex items-center justify-between py-2">
                       <div className="flex-1">
                         <Typography variant="paragraph" placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
-                          {transaction.description}
+                          {transaction.notes}
                         </Typography>
                       </div>
                       <Typography variant="paragraph" placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
-                        ${transaction.amount.toFixed(2)}
+                        Rp. {transaction.total?.toLocaleString() ?? '0'}
                       </Typography>
                     </div>
                   ))}
@@ -190,7 +184,7 @@ const TransactionPage: React.FC = () => {
                       onPointerEnterCapture={() => {}}
                       onPointerLeaveCapture={() => {}}
                     >
-                      ${getTotalAmount(transactions).toFixed(2)}
+                      Rp. {getTotalAmount(transactions).toLocaleString()}
                     </Typography>
                   </div>
                 </div>
