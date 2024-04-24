@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Button, Input, Option, Select, Textarea, Typography } from '@material-tailwind/react'
 import { useAuth } from '../../contexts/AuthContext'
-import { Transaction } from '../../interfaces/Transaction'
 import { addTransaction, getCategoriesByType } from '../../services/supabaseService'
-import { Category } from '../../interfaces/Category'
 
 interface AddTransactionModalProps {
   closeModal: () => void

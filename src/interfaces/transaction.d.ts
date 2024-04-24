@@ -1,4 +1,4 @@
-export interface Transaction {
+interface Transaction {
   total?: number
   category_id?: number
   notes?: string

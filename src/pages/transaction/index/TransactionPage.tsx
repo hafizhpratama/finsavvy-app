@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react'
 import Balance from '../../../components/Balance'
 import Card from '../../../components/Card'
 import IndexPage from '../../IndexPage'
-import { Transaction } from '../../../interfaces/Transaction'
 import { getTransactionsByUserId } from '../../../services/supabaseService'
 import { useAuth } from '../../../contexts/AuthContext'
 

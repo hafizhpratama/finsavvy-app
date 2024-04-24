@@ -7,10 +7,8 @@ import Balance from '../../components/Balance'
 import Card from '../../components/Card'
 import IndexPage from '../IndexPage'
 import { getTransactionsByUserId } from '../../services/supabaseService'
-import { Transaction } from '../../interfaces/Transaction'
 import { useAuth } from '../../contexts/AuthContext'
 import { getCategories } from '../../services/supabaseService'
-import { Category } from '../../interfaces/Category'
 
 const DashboardPage: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([])

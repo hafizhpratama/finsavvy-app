@@ -1,8 +1,6 @@
 // services/supabaseService.ts
 import { supabase } from '../utils/supabase'
 import { User } from '@supabase/supabase-js'
-import { Transaction } from '../interfaces/Transaction'
-import { Category } from '../interfaces/Category'
 
 export async function addTransaction(data: Transaction, user: User | null | undefined) {
   try {
