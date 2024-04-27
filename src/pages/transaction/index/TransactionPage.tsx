@@ -7,6 +7,7 @@ import { getTransactionsByUserId } from '../../../services/supabaseService'
 import { useAuth } from '../../../contexts/AuthContext'
 
 const TransactionPage: React.FC = () => {
+  const [isLoading, setIsLoading] = useState<boolean>(true)
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1)
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear())
@@ -14,6 +15,7 @@ const TransactionPage: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoading(true)
       const userId = user?.id
       const data = await getTransactionsByUserId(userId, selectedMonth, selectedYear)
 
@@ -22,6 +24,7 @@ const TransactionPage: React.FC = () => {
       } else {
         setTransactions([])
       }
+      setIsLoading(false)
     }
 
     fetchData()
@@ -65,7 +68,10 @@ const TransactionPage: React.FC = () => {
     <>
       <IndexPage>
         <div className="mb-16">
-          <Balance balance={getBalance(getTotalAmount(inflowTransactions), Math.abs(getTotalAmount(outflowTransactions)))} />
+          <Balance
+            balance={getBalance(getTotalAmount(inflowTransactions), Math.abs(getTotalAmount(outflowTransactions)))}
+            loading={isLoading}
+          />
 
           <Card title="Filter">
             <div className="flex w-full flex-col gap-4 sm:flex-row">
@@ -117,78 +123,174 @@ const TransactionPage: React.FC = () => {
                   <Typography variant="h6" placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
                     Inflow Total
                   </Typography>
-                  <Typography
-                    variant="paragraph"
-                    color="green"
-                    className="font-semibold"
-                    placeholder=""
-                    onPointerEnterCapture={() => {}}
-                    onPointerLeaveCapture={() => {}}
-                  >
-                    Rp. {getTotalAmount(inflowTransactions).toLocaleString()}
-                  </Typography>
+                  {isLoading ? (
+                    <div className="max-w-full animate-pulse">
+                      <Typography
+                        as="div"
+                        variant="h1"
+                        className="mb-4 h-6 bg-gray-300"
+                        placeholder=""
+                        onPointerEnterCapture={() => {}}
+                        onPointerLeaveCapture={() => {}}
+                      >
+                        &nbsp;
+                      </Typography>
+                    </div>
+                  ) : (
+                    <Typography
+                      variant="paragraph"
+                      color="green"
+                      className="font-semibold"
+                      placeholder=""
+                      onPointerEnterCapture={() => {}}
+                      onPointerLeaveCapture={() => {}}
+                    >
+                      Rp. {getTotalAmount(inflowTransactions).toLocaleString()}
+                    </Typography>
+                  )}
                 </div>
                 <div>
                   <Typography variant="h6" placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
                     Outflow Total
                   </Typography>
-                  <Typography
-                    variant="paragraph"
-                    color="red"
-                    className="font-semibold"
-                    placeholder=""
-                    onPointerEnterCapture={() => {}}
-                    onPointerLeaveCapture={() => {}}
-                  >
-                    Rp. {Math.abs(getTotalAmount(outflowTransactions)).toLocaleString()}
-                  </Typography>
+                  {isLoading ? (
+                    <div className="max-w-full animate-pulse">
+                      <Typography
+                        as="div"
+                        variant="h1"
+                        className="mb-4 h-6 bg-gray-300"
+                        placeholder=""
+                        onPointerEnterCapture={() => {}}
+                        onPointerLeaveCapture={() => {}}
+                      >
+                        &nbsp;
+                      </Typography>
+                    </div>
+                  ) : (
+                    <Typography
+                      variant="paragraph"
+                      color="red"
+                      className="font-semibold"
+                      placeholder=""
+                      onPointerEnterCapture={() => {}}
+                      onPointerLeaveCapture={() => {}}
+                    >
+                      Rp. {Math.abs(getTotalAmount(outflowTransactions)).toLocaleString()}
+                    </Typography>
+                  )}
                 </div>
               </div>
             </div>
           </Card>
 
           <Card title="Transaction">
-            {Object.entries(groupedTransactions).map(([date, transactions]) => (
-              <div key={date} className="mb-8 border-b border-gray-200">
-                <Typography variant="h6" color="indigo" placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
-                  {formatDate(date)}
-                </Typography>
-                <div className="divide-y divide-gray-200">
-                  {transactions.map((transaction, index) => (
-                    <div key={index} className="flex items-center justify-between py-2">
-                      <div className="flex-1">
-                        <Typography variant="paragraph" placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
-                          {transaction.notes}
+            {isLoading ? (
+              <>
+                <div className="max-w-full animate-pulse">
+                  <Typography
+                    as="div"
+                    variant="h1"
+                    className="mb-4 h-6 bg-gray-300"
+                    placeholder=""
+                    onPointerEnterCapture={() => {}}
+                    onPointerLeaveCapture={() => {}}
+                  >
+                    &nbsp;
+                  </Typography>
+                </div>
+                <div className="max-w-full animate-pulse">
+                  <Typography
+                    as="div"
+                    variant="h1"
+                    className="mb-4 h-6 bg-gray-300"
+                    placeholder=""
+                    onPointerEnterCapture={() => {}}
+                    onPointerLeaveCapture={() => {}}
+                  >
+                    &nbsp;
+                  </Typography>
+                </div>
+                <div className="max-w-full animate-pulse">
+                  <Typography
+                    as="div"
+                    variant="h1"
+                    className="mb-4 h-6 bg-gray-300"
+                    placeholder=""
+                    onPointerEnterCapture={() => {}}
+                    onPointerLeaveCapture={() => {}}
+                  >
+                    &nbsp;
+                  </Typography>
+                </div>
+                <div className="max-w-full animate-pulse">
+                  <Typography
+                    as="div"
+                    variant="h1"
+                    className="mb-4 h-6 bg-gray-300"
+                    placeholder=""
+                    onPointerEnterCapture={() => {}}
+                    onPointerLeaveCapture={() => {}}
+                  >
+                    &nbsp;
+                  </Typography>
+                </div>
+              </>
+            ) : (
+              <>
+                {Object.entries(groupedTransactions).map(([date, transactions]) => (
+                  <div key={date} className="mb-8 border-b border-gray-200">
+                    <Typography
+                      variant="h6"
+                      color="indigo"
+                      placeholder=""
+                      onPointerEnterCapture={() => {}}
+                      onPointerLeaveCapture={() => {}}
+                    >
+                      {formatDate(date)}
+                    </Typography>
+                    <div className="divide-y divide-gray-200">
+                      {transactions.map((transaction, index) => (
+                        <div key={index} className="flex items-center justify-between py-2">
+                          <div className="flex-1">
+                            <Typography
+                              variant="paragraph"
+                              placeholder=""
+                              onPointerEnterCapture={() => {}}
+                              onPointerLeaveCapture={() => {}}
+                            >
+                              {transaction.notes}
+                            </Typography>
+                          </div>
+                          <Typography variant="paragraph" placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
+                            Rp. {transaction.total?.toLocaleString() ?? '0'}
+                          </Typography>
+                        </div>
+                      ))}
+                      <div className="flex items-center justify-between py-2">
+                        <Typography
+                          variant="paragraph"
+                          className="font-semibold"
+                          placeholder=""
+                          onPointerEnterCapture={() => {}}
+                          onPointerLeaveCapture={() => {}}
+                        >
+                          Total
+                        </Typography>
+                        <Typography
+                          variant="paragraph"
+                          className="font-semibold"
+                          placeholder=""
+                          onPointerEnterCapture={() => {}}
+                          onPointerLeaveCapture={() => {}}
+                        >
+                          Rp. {getTotalAmount(transactions).toLocaleString()}
                         </Typography>
                       </div>
-                      <Typography variant="paragraph" placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
-                        Rp. {transaction.total?.toLocaleString() ?? '0'}
-                      </Typography>
                     </div>
-                  ))}
-                  <div className="flex items-center justify-between py-2">
-                    <Typography
-                      variant="paragraph"
-                      className="font-semibold"
-                      placeholder=""
-                      onPointerEnterCapture={() => {}}
-                      onPointerLeaveCapture={() => {}}
-                    >
-                      Total
-                    </Typography>
-                    <Typography
-                      variant="paragraph"
-                      className="font-semibold"
-                      placeholder=""
-                      onPointerEnterCapture={() => {}}
-                      onPointerLeaveCapture={() => {}}
-                    >
-                      Rp. {getTotalAmount(transactions).toLocaleString()}
-                    </Typography>
                   </div>
-                </div>
-              </div>
-            ))}
+                ))}
+              </>
+            )}
           </Card>
         </div>
       </IndexPage>

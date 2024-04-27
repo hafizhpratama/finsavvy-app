@@ -1,4 +1,3 @@
-// pages/dashboard/DashboardPage.tsx
 import React, { useState, useEffect } from 'react'
 import ReactApexChart from 'react-apexcharts'
 import { ApexOptions } from 'apexcharts'
@@ -12,6 +11,7 @@ import { getCategories } from '../../services/supabaseService'
 import Datepicker from 'react-tailwindcss-datepicker'
 
 const DashboardPage: React.FC = () => {
+  const [isLoading, setIsLoading] = useState<boolean>(true)
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const { user } = useAuth()
@@ -27,29 +27,37 @@ const DashboardPage: React.FC = () => {
   })
 
   const handleValueChange = (filterDate: any) => {
+    setIsLoading(true)
     setFilterDate(filterDate)
     calculatePieChartData(transactions, filterDate.startDate, filterDate.endDate)
+    setIsLoading(false)
   }
 
   useEffect(() => {
+    setIsLoading(true)
     const pieChartData = calculatePieChartData(transactions, filterDate.startDate, filterDate.endDate)
     setPieChartData(pieChartData)
+    setIsLoading(false)
   }, [transactions, filterDate])
 
   useEffect(() => {
     async function fetchTransactions() {
+      setIsLoading(true)
       const userId = user?.id
       const data = await getTransactionsByUserId(userId)
       if (data) {
         setTransactions(data)
       }
+      setIsLoading(false)
     }
     async function fetchCategories() {
+      setIsLoading(true)
       const userId = user?.id
       const data = await getCategories(userId)
       if (data) {
         setCategories(data)
       }
+      setIsLoading(false)
     }
     fetchTransactions()
     fetchCategories()
@@ -96,8 +104,10 @@ const DashboardPage: React.FC = () => {
   }
 
   useEffect(() => {
+    setIsLoading(true)
     const monthlySpendingData = calculateMonthlySpending(transactions, selectedYear)
     setMonthlySpendingData(monthlySpendingData)
+    setIsLoading(false)
   }, [transactions, selectedYear])
 
   const topSpendingData = calculateTopSpending(transactions, categories)
@@ -224,94 +234,298 @@ const DashboardPage: React.FC = () => {
     <>
       <IndexPage>
         <div className="mb-16">
-          <Balance balance={getBalance(getTotalAmount(inflowTransactions), Math.abs(getTotalAmount(outflowTransactions)))} />
+          <Balance
+            balance={getBalance(getTotalAmount(inflowTransactions), Math.abs(getTotalAmount(outflowTransactions)))}
+            loading={isLoading}
+          />
 
           <Card title="Spending Report">
-            <Select
-              value={String(selectedYear)}
-              id="year"
-              label="Year"
-              onChange={(e) => {
-                const selectedValue = parseInt(e || '')
-                setSelectedYear(selectedValue)
-              }}
-              placeholder=""
-              onPointerEnterCapture={() => {}}
-              onPointerLeaveCapture={() => {}}
-              className="w-full"
-            >
-              {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i).map((year) => (
-                <Option key={year} value={String(year)}>
-                  {year}
-                </Option>
-              ))}
-            </Select>
-            <div className="w-full">
-              {/* Spending Report */}
-              <ReactApexChart options={options} series={series} type="bar" width="100%" height={350} />
+            <div className="mb-4">
+              <Select
+                value={String(selectedYear)}
+                id="year"
+                label="Year"
+                onChange={(e) => {
+                  const selectedValue = parseInt(e || '')
+                  setSelectedYear(selectedValue)
+                }}
+                placeholder=""
+                onPointerEnterCapture={() => {}}
+                onPointerLeaveCapture={() => {}}
+                className="w-full"
+              >
+                {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i).map((year) => (
+                  <Option key={year} value={String(year)}>
+                    {year}
+                  </Option>
+                ))}
+              </Select>
             </div>
+            {isLoading ? (
+              <div className="max-w-full animate-pulse">
+                <Typography
+                  as="div"
+                  variant="h1"
+                  className="mb-4 h-6 bg-gray-300"
+                  placeholder=""
+                  onPointerEnterCapture={() => {}}
+                  onPointerLeaveCapture={() => {}}
+                >
+                  &nbsp;
+                </Typography>
+                <Typography
+                  as="div"
+                  variant="h1"
+                  className="mb-4 h-6 bg-gray-300"
+                  placeholder=""
+                  onPointerEnterCapture={() => {}}
+                  onPointerLeaveCapture={() => {}}
+                >
+                  &nbsp;
+                </Typography>
+                <Typography
+                  as="div"
+                  variant="h1"
+                  className="mb-4 h-6 bg-gray-300"
+                  placeholder=""
+                  onPointerEnterCapture={() => {}}
+                  onPointerLeaveCapture={() => {}}
+                >
+                  &nbsp;
+                </Typography>
+                <Typography
+                  as="div"
+                  variant="h1"
+                  className="mb-4 h-6 bg-gray-300"
+                  placeholder=""
+                  onPointerEnterCapture={() => {}}
+                  onPointerLeaveCapture={() => {}}
+                >
+                  &nbsp;
+                </Typography>
+                <Typography
+                  as="div"
+                  variant="h1"
+                  className="mb-4 h-6 bg-gray-300"
+                  placeholder=""
+                  onPointerEnterCapture={() => {}}
+                  onPointerLeaveCapture={() => {}}
+                >
+                  &nbsp;
+                </Typography>
+              </div>
+            ) : (
+              <div className="w-full">
+                {/* Spending Report */}
+                <ReactApexChart options={options} series={series} type="bar" width="100%" height={350} />
+              </div>
+            )}
           </Card>
 
           <Card title="Spending Chart">
             <div className="mb-4 flex justify-between rounded-lg border-2 border-solid border-gray-300">
               <Datepicker useRange value={filterDate} onChange={handleValueChange} />
             </div>
-            <div className="flex flex-col items-center">
-              {pieChartData.length > 0 ? (
-                <div className="w-full">
-                  <ReactApexChart
-                    options={{ ...options, colors: pieChartColors, legend: { position: 'bottom' } }}
-                    series={pieChartData.map((item) => item.amount)}
-                    type="pie"
-                    width="100%"
-                    height={350}
-                  />
-                </div>
-              ) : (
-                <p className="py-16">No data available today.</p>
-              )}
-            </div>
+            {isLoading ? (
+              <div className="max-w-full animate-pulse">
+                <Typography
+                  as="div"
+                  variant="h1"
+                  className="mb-4 h-6 bg-gray-300"
+                  placeholder=""
+                  onPointerEnterCapture={() => {}}
+                  onPointerLeaveCapture={() => {}}
+                >
+                  &nbsp;
+                </Typography>
+                <Typography
+                  as="div"
+                  variant="h1"
+                  className="mb-4 h-6 bg-gray-300"
+                  placeholder=""
+                  onPointerEnterCapture={() => {}}
+                  onPointerLeaveCapture={() => {}}
+                >
+                  &nbsp;
+                </Typography>
+                <Typography
+                  as="div"
+                  variant="h1"
+                  className="mb-4 h-6 bg-gray-300"
+                  placeholder=""
+                  onPointerEnterCapture={() => {}}
+                  onPointerLeaveCapture={() => {}}
+                >
+                  &nbsp;
+                </Typography>
+                <Typography
+                  as="div"
+                  variant="h1"
+                  className="mb-4 h-6 bg-gray-300"
+                  placeholder=""
+                  onPointerEnterCapture={() => {}}
+                  onPointerLeaveCapture={() => {}}
+                >
+                  &nbsp;
+                </Typography>
+                <Typography
+                  as="div"
+                  variant="h1"
+                  className="mb-4 h-6 bg-gray-300"
+                  placeholder=""
+                  onPointerEnterCapture={() => {}}
+                  onPointerLeaveCapture={() => {}}
+                >
+                  &nbsp;
+                </Typography>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center">
+                {pieChartData.length > 0 ? (
+                  <div className="w-full">
+                    <ReactApexChart
+                      options={{ ...options, colors: pieChartColors, legend: { position: 'bottom' } }}
+                      series={pieChartData.map((item) => item.amount)}
+                      type="pie"
+                      width="100%"
+                      height={350}
+                    />
+                  </div>
+                ) : (
+                  <p className="py-16">No data available today.</p>
+                )}
+              </div>
+            )}
           </Card>
 
           <Card title="Top Spending">
             <div>
-              <List placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
-                {topSpendingData.map((item, index) => (
-                  <ListItem key={index} placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
-                    <ListItemPrefix placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
-                      <Avatar
-                        variant="circular"
-                        alt="candice"
-                        src="https://docs.material-tailwind.com/img/face-1.jpg"
-                        placeholder=""
-                        onPointerEnterCapture={() => {}}
-                        onPointerLeaveCapture={() => {}}
-                      />
-                    </ListItemPrefix>
-                    <div>
+              {isLoading ? (
+                <>
+                  <div className="mb-4 flex animate-pulse items-center gap-8">
+                    {/* Left container */}
+                    <div className="grid h-14 w-14 place-items-center rounded-full bg-gray-300"></div>
+
+                    {/* Right container */}
+                    <div className="w-full">
                       <Typography
-                        variant="h6"
-                        color="blue-gray"
+                        as="div"
+                        variant="h1"
+                        className="mb-4 h-6 bg-gray-300"
                         placeholder=""
                         onPointerEnterCapture={() => {}}
                         onPointerLeaveCapture={() => {}}
                       >
-                        {item.title}
+                        &nbsp;
                       </Typography>
                       <Typography
-                        variant="small"
-                        color="gray"
-                        className="font-normal"
+                        as="div"
+                        variant="h1"
+                        className="mb-2 h-6 bg-gray-300"
                         placeholder=""
                         onPointerEnterCapture={() => {}}
                         onPointerLeaveCapture={() => {}}
                       >
-                        Rp. {item.amount.toLocaleString()}
+                        &nbsp;
                       </Typography>
                     </div>
-                  </ListItem>
-                ))}
-              </List>
+                  </div>
+                  <div className="mb-4 flex animate-pulse items-center gap-8">
+                    {/* Left container */}
+                    <div className="grid h-14 w-14 place-items-center rounded-full bg-gray-300"></div>
+
+                    {/* Right container */}
+                    <div className="w-full">
+                      <Typography
+                        as="div"
+                        variant="h1"
+                        className="mb-4 h-6 bg-gray-300"
+                        placeholder=""
+                        onPointerEnterCapture={() => {}}
+                        onPointerLeaveCapture={() => {}}
+                      >
+                        &nbsp;
+                      </Typography>
+                      <Typography
+                        as="div"
+                        variant="h1"
+                        className="mb-2 h-6 bg-gray-300"
+                        placeholder=""
+                        onPointerEnterCapture={() => {}}
+                        onPointerLeaveCapture={() => {}}
+                      >
+                        &nbsp;
+                      </Typography>
+                    </div>
+                  </div>
+                  <div className="mb-4 flex animate-pulse items-center gap-8">
+                    {/* Left container */}
+                    <div className="grid h-14 w-14 place-items-center rounded-full bg-gray-300"></div>
+
+                    {/* Right container */}
+                    <div className="w-full">
+                      <Typography
+                        as="div"
+                        variant="h1"
+                        className="mb-4 h-6 bg-gray-300"
+                        placeholder=""
+                        onPointerEnterCapture={() => {}}
+                        onPointerLeaveCapture={() => {}}
+                      >
+                        &nbsp;
+                      </Typography>
+                      <Typography
+                        as="div"
+                        variant="h1"
+                        className="mb-2 h-6 bg-gray-300"
+                        placeholder=""
+                        onPointerEnterCapture={() => {}}
+                        onPointerLeaveCapture={() => {}}
+                      >
+                        &nbsp;
+                      </Typography>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <List placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
+                  {topSpendingData.map((item, index) => (
+                    <ListItem key={index} placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
+                      <ListItemPrefix placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
+                        <Avatar
+                          variant="circular"
+                          alt="candice"
+                          src="https://docs.material-tailwind.com/img/face-1.jpg"
+                          placeholder=""
+                          onPointerEnterCapture={() => {}}
+                          onPointerLeaveCapture={() => {}}
+                        />
+                      </ListItemPrefix>
+                      <div>
+                        <Typography
+                          variant="h6"
+                          color="blue-gray"
+                          placeholder=""
+                          onPointerEnterCapture={() => {}}
+                          onPointerLeaveCapture={() => {}}
+                        >
+                          {item.title}
+                        </Typography>
+                        <Typography
+                          variant="small"
+                          color="gray"
+                          className="font-normal"
+                          placeholder=""
+                          onPointerEnterCapture={() => {}}
+                          onPointerLeaveCapture={() => {}}
+                        >
+                          Rp. {item.amount.toLocaleString()}
+                        </Typography>
+                      </div>
+                    </ListItem>
+                  ))}
+                </List>
+              )}
             </div>
           </Card>
         </div>
