@@ -2,18 +2,39 @@
 import React, { useState, useEffect } from 'react'
 import ReactApexChart from 'react-apexcharts'
 import { ApexOptions } from 'apexcharts'
-import { Avatar, List, ListItem, ListItemPrefix, ListItemSuffix, Typography } from '@material-tailwind/react'
+import { Avatar, List, ListItem, ListItemPrefix, Option, Select, Typography } from '@material-tailwind/react'
 import Balance from '../../components/Balance'
 import Card from '../../components/Card'
 import IndexPage from '../IndexPage'
 import { getTransactionsByUserId } from '../../services/supabaseService'
 import { useAuth } from '../../contexts/AuthContext'
 import { getCategories } from '../../services/supabaseService'
+import Datepicker from 'react-tailwindcss-datepicker'
 
 const DashboardPage: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const { user } = useAuth()
+  const today = new Date()
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear())
+
+  const [monthlySpendingData, setMonthlySpendingData] = useState<{ label: string; amount: number }[]>([])
+  const [pieChartData, setPieChartData] = useState<{ label: string; amount: number }[]>([])
+
+  const [filterDate, setFilterDate] = useState<{ startDate: Date; endDate: Date }>({
+    startDate: today,
+    endDate: today,
+  })
+
+  const handleValueChange = (filterDate: any) => {
+    setFilterDate(filterDate)
+    calculatePieChartData(transactions, filterDate.startDate, filterDate.endDate)
+  }
+
+  useEffect(() => {
+    const pieChartData = calculatePieChartData(transactions, filterDate.startDate, filterDate.endDate)
+    setPieChartData(pieChartData)
+  }, [transactions, filterDate])
 
   useEffect(() => {
     async function fetchTransactions() {
@@ -46,19 +67,20 @@ const DashboardPage: React.FC = () => {
 
     const sortedCategories = Object.entries(categoryMap).sort((a, b) => b[1] - a[1])
 
-    return sortedCategories.slice(0, 3).map(([categoryName, total]) => ({ title: categoryName, amount: total }))
+    return sortedCategories.slice(0, 5).map(([categoryName, total]) => ({ title: categoryName, amount: total }))
   }
 
-  const calculateMonthlySpending = (transactions: Transaction[]): { label: string; amount: number }[] => {
+  const calculateMonthlySpending = (transactions: Transaction[], selectedYear: number): { label: string; amount: number }[] => {
     const today = new Date()
     const thisYear = today.getFullYear()
     const thisMonth = today.getMonth()
+    const monthsToShow = selectedYear === thisYear ? thisMonth + 1 : 12
 
     const monthlySpending: { [key: string]: number } = {}
 
-    for (let i = 0; i <= thisMonth; i++) {
-      const month = new Date(thisYear, i, 1)
-      const nextMonth = new Date(thisYear, i + 1, 1)
+    for (let i = 0; i < monthsToShow; i++) {
+      const month = new Date(selectedYear, i, 1)
+      const nextMonth = new Date(selectedYear, i + 1, 1)
       const monthTransactions = transactions.filter(
         (transaction) => new Date(transaction.date || '') >= month && new Date(transaction.date || '') < nextMonth,
       )
@@ -73,13 +95,30 @@ const DashboardPage: React.FC = () => {
     }))
   }
 
-  const monthlySpendingData = calculateMonthlySpending(transactions)
+  useEffect(() => {
+    const monthlySpendingData = calculateMonthlySpending(transactions, selectedYear)
+    setMonthlySpendingData(monthlySpendingData)
+  }, [transactions, selectedYear])
+
   const topSpendingData = calculateTopSpending(transactions, categories)
 
-  const calculatePieChartData = (transactions: Transaction[]): { label: string; amount: number }[] => {
+  const calculatePieChartData = (
+    transactions: Transaction[],
+    startDate: Date | null,
+    endDate: Date | null,
+  ): { label: string; amount: number }[] => {
     const categoryMap: { [key: string]: number } = {}
 
-    transactions.forEach((transaction) => {
+    const filteredTransactions = transactions.filter((transaction) => {
+      const transactionDate = new Date(transaction.date || '').toISOString().split('T')[0]
+
+      return (
+        transactionDate >= (startDate || new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0]) &&
+        transactionDate <= (endDate || new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0])
+      )
+    })
+
+    filteredTransactions.forEach((transaction) => {
       const categoryId = transaction.category_id
       const category = categories.find((cat) => cat.category_id === categoryId)
       const categoryName = category ? category.category_name : 'Other'
@@ -88,8 +127,6 @@ const DashboardPage: React.FC = () => {
 
     return Object.entries(categoryMap).map(([categoryName, total]) => ({ label: categoryName, amount: total }))
   }
-
-  const pieChartData = calculatePieChartData(transactions)
 
   const options: ApexOptions = {
     chart: {
@@ -190,24 +227,49 @@ const DashboardPage: React.FC = () => {
           <Balance balance={getBalance(getTotalAmount(inflowTransactions), Math.abs(getTotalAmount(outflowTransactions)))} />
 
           <Card title="Spending Report">
+            <Select
+              value={String(selectedYear)}
+              id="year"
+              label="Year"
+              onChange={(e) => {
+                const selectedValue = parseInt(e || '')
+                setSelectedYear(selectedValue)
+              }}
+              placeholder=""
+              onPointerEnterCapture={() => {}}
+              onPointerLeaveCapture={() => {}}
+              className="w-full"
+            >
+              {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i).map((year) => (
+                <Option key={year} value={String(year)}>
+                  {year}
+                </Option>
+              ))}
+            </Select>
             <div className="w-full">
               {/* Spending Report */}
               <ReactApexChart options={options} series={series} type="bar" width="100%" height={350} />
             </div>
           </Card>
 
-          <Card title="Spending Report Pie Chart">
+          <Card title="Spending Chart">
+            <div className="mb-4 flex justify-between rounded-lg border-2 border-solid border-gray-300">
+              <Datepicker useRange value={filterDate} onChange={handleValueChange} />
+            </div>
             <div className="flex flex-col items-center">
-              {/* Spending Report */}
-              <div className="w-full">
-                <ReactApexChart
-                  options={{ ...options, colors: pieChartColors, legend: { position: 'bottom' } }}
-                  series={pieChartData.map((item) => item.amount)}
-                  type="pie"
-                  width="100%"
-                  height={350}
-                />
-              </div>
+              {pieChartData.length > 0 ? (
+                <div className="w-full">
+                  <ReactApexChart
+                    options={{ ...options, colors: pieChartColors, legend: { position: 'bottom' } }}
+                    series={pieChartData.map((item) => item.amount)}
+                    type="pie"
+                    width="100%"
+                    height={350}
+                  />
+                </div>
+              ) : (
+                <p className="py-16">No data available today.</p>
+              )}
             </div>
           </Card>
 
@@ -247,18 +309,6 @@ const DashboardPage: React.FC = () => {
                         Rp. {item.amount.toLocaleString()}
                       </Typography>
                     </div>
-                    <ListItemSuffix placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
-                      <Typography
-                        variant="small"
-                        color="gray"
-                        className="font-normal"
-                        placeholder=""
-                        onPointerEnterCapture={() => {}}
-                        onPointerLeaveCapture={() => {}}
-                      >
-                        {((item.amount / 500) * 100).toFixed(1)}%
-                      </Typography>
-                    </ListItemSuffix>
                   </ListItem>
                 ))}
               </List>

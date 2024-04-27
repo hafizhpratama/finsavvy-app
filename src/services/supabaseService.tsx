@@ -1,4 +1,3 @@
-// services/supabaseService.ts
 import { supabase } from '../utils/supabase'
 import { User } from '@supabase/supabase-js'
 
