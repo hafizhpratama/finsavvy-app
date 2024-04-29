@@ -17,13 +17,24 @@ const DashboardPage: React.FC = () => {
   const { user } = useAuth()
   const today = new Date()
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear())
+  const [refreshData, setRefreshData] = useState<boolean>(false)
+  const [isVisible, setIsVisible] = useState(false)
+  const [alertMessage, setAlertMessage] = useState<string>('')
+
+  const handleAlertClose = () => {
+    setIsVisible(false)
+  }
+
+  const handleRefreshData = () => {
+    setRefreshData((prevState) => !prevState)
+  }
 
   const [monthlySpendingData, setMonthlySpendingData] = useState<{ label: string; amount: number }[]>([])
   const [pieChartData, setPieChartData] = useState<{ label: string; amount: number }[]>([])
 
-  const [filterDate, setFilterDate] = useState<{ startDate: Date; endDate: Date }>({
-    startDate: today,
-    endDate: today,
+  const [filterDate, setFilterDate] = useState<{ startDate: string; endDate: string }>({
+    startDate: today.toISOString().split('T')[0],
+    endDate: today.toISOString().split('T')[0],
   })
 
   const handleValueChange = (filterDate: any) => {
@@ -61,7 +72,7 @@ const DashboardPage: React.FC = () => {
     }
     fetchTransactions()
     fetchCategories()
-  }, [])
+  }, [refreshData])
 
   const calculateTopSpending = (transactions: Transaction[], categories: Category[]): { title: string; amount: number }[] => {
     const categoryMap: { [key: string]: number } = {}
@@ -114,8 +125,8 @@ const DashboardPage: React.FC = () => {
 
   const calculatePieChartData = (
     transactions: Transaction[],
-    startDate: Date | null,
-    endDate: Date | null,
+    startDate: string | null,
+    endDate: string | null,
   ): { label: string; amount: number }[] => {
     const categoryMap: { [key: string]: number } = {}
 
@@ -230,9 +241,44 @@ const DashboardPage: React.FC = () => {
     return transactionList.reduce((total, transaction) => total + (transaction.total || 0), 0)
   }
 
+  const handleReceiveAlertMessage = (message: string) => {
+    setAlertMessage(message)
+    setIsVisible(true)
+    setTimeout(() => {
+      setIsVisible(false)
+    }, 5000)
+  }
+
   return (
     <>
-      <IndexPage>
+      <IndexPage refreshData={handleRefreshData} sendAlertMessage={handleReceiveAlertMessage}>
+        {isVisible && (
+          <div
+            id="alert-3"
+            className="mx-4 mb-4 flex items-center rounded-lg bg-green-50 p-4 text-green-800 dark:bg-gray-800 dark:text-green-400"
+            role="alert"
+          >
+            <div className="ms-3 text-sm font-medium">{alertMessage}</div>
+            <button
+              type="button"
+              className="-mx-1.5 -my-1.5 ms-auto inline-flex h-8 w-8 items-center justify-center rounded-lg bg-green-50 p-1.5 text-green-500 hover:bg-green-200 focus:ring-2 focus:ring-green-400 dark:bg-gray-800 dark:text-green-400 dark:hover:bg-gray-700"
+              aria-label="Close"
+              onClick={handleAlertClose}
+            >
+              <span className="sr-only">Close</span>
+              <svg className="h-3 w-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                <path
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+                />
+              </svg>
+            </button>
+          </div>
+        )}
+
         <div className="mb-16">
           <Balance
             balance={getBalance(getTotalAmount(inflowTransactions), Math.abs(getTotalAmount(outflowTransactions)))}

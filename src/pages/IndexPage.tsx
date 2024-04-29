@@ -5,9 +5,11 @@ import AddTransactionModal from '../components/Modal/AddTransactionModal'
 
 interface IndexPageProps {
   children: ReactNode
+  refreshData: () => void
+  sendAlertMessage: (message: string) => void
 }
 
-const IndexPage: React.FC<IndexPageProps> = ({ children }) => {
+const IndexPage: React.FC<IndexPageProps> = ({ children, refreshData, sendAlertMessage }) => {
   const location = useLocation()
   const [showModal, setShowModal] = useState(false)
 
@@ -51,7 +53,7 @@ const IndexPage: React.FC<IndexPageProps> = ({ children }) => {
         </div>
       </div>
 
-      {showModal && <AddTransactionModal closeModal={closeModal} />}
+      {showModal && <AddTransactionModal closeModal={closeModal} refreshData={refreshData} sendAlertMessage={sendAlertMessage} />}
     </div>
   )
 }

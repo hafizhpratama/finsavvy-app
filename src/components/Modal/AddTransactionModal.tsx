@@ -5,9 +5,11 @@ import { addTransaction, getCategoriesByType } from '../../services/supabaseServ
 
 interface AddTransactionModalProps {
   closeModal: () => void
+  refreshData: () => void
+  sendAlertMessage: (message: string) => void
 }
 
-const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ closeModal }) => {
+const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ closeModal, refreshData, sendAlertMessage }) => {
   const [type, setType] = useState('')
   const [total, setTotal] = useState('')
   const [category, setCategory] = useState('')
@@ -19,7 +21,6 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ closeModal })
   useEffect(() => {
     const fetchCategories = async () => {
       const data = await getCategoriesByType(user?.id, type)
-      console.log(data)
       if (data) {
         setCategories(data)
       }
@@ -40,6 +41,8 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ closeModal })
 
     if (result.success) {
       closeModal()
+      refreshData()
+      sendAlertMessage('Transaction added successfully')
     }
   }
 
