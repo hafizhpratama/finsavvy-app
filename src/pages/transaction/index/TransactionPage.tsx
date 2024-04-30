@@ -7,6 +7,7 @@ import Card from '../../../components/Card'
 import IndexPage from '../../IndexPage'
 import Typography from '../../../components/Typography'
 import Select from '../../../components/Select'
+import Error from '../../../components/Error'
 
 const TransactionPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true)
@@ -15,6 +16,7 @@ const TransactionPage: React.FC = () => {
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear())
   const [refreshData, setRefreshData] = useState<boolean>(false)
   const [alertMessage, setAlertMessage] = useState<string>('')
+  const [error, setError] = useState<string | null>(null)
   const [isVisible, setIsVisible] = useState(false)
   const { user } = useAuth()
 
@@ -25,9 +27,10 @@ const TransactionPage: React.FC = () => {
         const userId = user?.id
         const data = await getTransactionsByUserId(userId, selectedMonth, selectedYear)
         setTransactions(data ?? [])
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching transactions:', error)
         setTransactions([])
+        setError(error)
       } finally {
         setIsLoading(false)
       }
@@ -76,8 +79,11 @@ const TransactionPage: React.FC = () => {
     }, 5000)
   }
 
-  // Close alert
   const handleAlertClose = () => setIsVisible(false)
+
+  if (error) {
+    return <Error errorCode={500} errorMessage={error} />
+  }
 
   return (
     <>

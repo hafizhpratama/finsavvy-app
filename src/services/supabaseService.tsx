@@ -9,10 +9,8 @@ export async function addTransaction(data: Transaction, user: User | null | unde
       throw error
     }
 
-    console.log('Transaction added successfully')
     return { success: true }
   } catch (error: any) {
-    console.error('Error adding transaction:', error.message)
     return { success: false, error: error.message }
   }
 }
@@ -34,10 +32,8 @@ export async function getTransactionsByUserId(
       throw error
     }
 
-    console.log('Transactions fetched successfully')
     return data
   } catch (error: any) {
-    console.error('Error fetching transactions:', error.message)
     return null
   }
 }

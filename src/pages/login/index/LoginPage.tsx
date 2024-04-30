@@ -33,7 +33,13 @@ const LoginPage: React.FC = () => {
     return () => subscription.unsubscribe()
   }, [])
 
-  return <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} providers={['google']} />
+  return (
+    <div className="flex h-screen w-full items-center justify-center">
+      <div className="w-full max-w-md px-4">
+        <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} providers={['google']} />
+      </div>
+    </div>
+  )
 }
 
 export default LoginPage

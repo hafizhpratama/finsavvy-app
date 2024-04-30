@@ -11,6 +11,7 @@ import Datepicker, { DateValueType } from 'react-tailwindcss-datepicker'
 import Typography from '../../components/Typography'
 import Select from '../../components/Select'
 import { BiCheckCircle } from 'react-icons/bi'
+import Error from '../../components/Error'
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuth()
@@ -22,6 +23,7 @@ const DashboardPage: React.FC = () => {
   const [refreshData, setRefreshData] = useState<boolean>(false)
   const [isVisible, setIsVisible] = useState<boolean>(false)
   const [alertMessage, setAlertMessage] = useState<string>('')
+  const [error, setError] = useState<string | null>(null)
   const [monthlySpendingData, setMonthlySpendingData] = useState<{ label: string; amount: number }[]>([])
   const [pieChartData, setPieChartData] = useState<{ label: string; amount: number }[]>([])
   const [filterDate, setFilterDate] = useState<DateValueType>({
@@ -44,8 +46,8 @@ const DashboardPage: React.FC = () => {
         const [transactionData, categoryData] = await Promise.all([getTransactionsByUserId(userId), getCategories(userId)])
         if (transactionData) setTransactions(transactionData)
         if (categoryData) setCategories(categoryData)
-      } catch (error) {
-        console.error('Error fetching data:', error)
+      } catch (error: any) {
+        setError(error)
       } finally {
         setIsLoading(false)
       }
@@ -217,6 +219,10 @@ const DashboardPage: React.FC = () => {
     setTimeout(() => {
       setIsVisible(false)
     }, 5000)
+  }
+
+  if (error) {
+    return <Error errorCode={500} errorMessage={error} />
   }
 
   return (

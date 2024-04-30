@@ -3,6 +3,7 @@ import { FaHome, FaDollarSign, FaPlus, FaUserCircle } from 'react-icons/fa'
 import { Link, useLocation } from 'react-router-dom'
 import AddTransactionModal from '../components/Modal/AddTransactionModal'
 import { useAuth } from '../contexts/AuthContext'
+import Error from '../components/Error'
 
 interface IndexPageProps {
   children: ReactNode
@@ -14,6 +15,7 @@ const IndexPage: React.FC<IndexPageProps> = ({ children, refreshData, sendAlertM
   const location = useLocation()
   const [showModal, setShowModal] = useState(false)
   const [showOptions, setShowOptions] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const { signOut } = useAuth()
 
   const openModal = () => setShowModal(true)
@@ -24,8 +26,12 @@ const IndexPage: React.FC<IndexPageProps> = ({ children, refreshData, sendAlertM
     try {
       await signOut()
     } catch (error: any) {
-      console.error('Error signing out:', error.message)
+      setError(error)
     }
+  }
+
+  if (error) {
+    return <Error errorCode={500} errorMessage={error} />
   }
 
   return (
