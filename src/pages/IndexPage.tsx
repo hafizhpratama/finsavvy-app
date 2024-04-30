@@ -1,5 +1,5 @@
 import React, { ReactNode, useState } from 'react'
-import { FaHome, FaDollarSign, FaPlus, FaUserCircle } from 'react-icons/fa'
+import { FaHome, FaDollarSign, FaPlus } from 'react-icons/fa'
 import { Link, useLocation } from 'react-router-dom'
 import AddTransactionModal from '../components/Modal/AddTransactionModal'
 import { useAuth } from '../contexts/AuthContext'
@@ -16,7 +16,7 @@ const IndexPage: React.FC<IndexPageProps> = ({ children, refreshData, sendAlertM
   const [showModal, setShowModal] = useState(false)
   const [showOptions, setShowOptions] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const { signOut } = useAuth()
+  const { signOut, user } = useAuth()
 
   const openModal = () => setShowModal(true)
   const closeModal = () => setShowModal(false)
@@ -34,13 +34,21 @@ const IndexPage: React.FC<IndexPageProps> = ({ children, refreshData, sendAlertM
     return <Error errorCode={500} errorMessage={error} />
   }
 
+  const getInitials = (name: string) => {
+    const names = name.split(' ')
+    return names
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+  }
+
   return (
     <div>
       {/* Profile Photo */}
       <div className="mb-2 mr-4 flex justify-end">
         <div className="relative">
-          <div onClick={toggleOptions} className="h-10 w-10 cursor-pointer rounded-full bg-blue-gray-500">
-            <FaUserCircle size={24} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform text-white" />
+          <div onClick={toggleOptions} className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-green-500">
+            <span className="text-lg text-white">{getInitials(user?.email || '')}</span>
           </div>
           {showOptions && (
             <div className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5">

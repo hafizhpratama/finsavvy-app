@@ -12,6 +12,22 @@ import Typography from '../../components/Typography'
 import Select from '../../components/Select'
 import { BiCheckCircle } from 'react-icons/bi'
 import Error from '../../components/Error'
+import {
+  MdAttachMoney,
+  MdDirectionsCar,
+  MdHome,
+  MdLocalHospital,
+  MdRestaurant,
+  MdSchool,
+  MdSecurity,
+  MdShoppingCart,
+  MdTheaters,
+} from 'react-icons/md'
+import { IconType } from 'react-icons'
+
+interface CategoryIcons {
+  [key: string]: IconType
+}
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuth()
@@ -221,6 +237,29 @@ const DashboardPage: React.FC = () => {
     }, 5000)
   }
 
+  const categoryIcons: CategoryIcons = {
+    Salary: MdAttachMoney,
+    Interest: MdAttachMoney,
+    Investments: MdAttachMoney,
+    Gifts: MdAttachMoney,
+    Other: MdAttachMoney,
+    Utilities: MdHome,
+    Groceries: MdShoppingCart,
+    Transportation: MdDirectionsCar,
+    Dining: MdRestaurant,
+    Entertainment: MdTheaters,
+    Healthcare: MdLocalHospital,
+    Education: MdSchool,
+    Insurance: MdSecurity,
+    Rent: MdHome,
+  }
+
+  function getCategoryColor(category: string): string {
+    const hash = category.split('').reduce((acc, char) => char.charCodeAt(0) + acc, 0)
+    const hue = hash % 360
+    return `hsl(${hue}, 70%, 50%)`
+  }
+
   if (error) {
     return <Error errorCode={500} errorMessage={error} />
   }
@@ -378,24 +417,28 @@ const DashboardPage: React.FC = () => {
               ) : (
                 // @ts-ignore
                 <List>
-                  {calculateTopSpending(transactions, categories).map((item, index) => (
-                    // @ts-ignore
-                    <ListItem key={index}>
-                      {/* @ts-ignore */}
-                      <ListItemPrefix>
+                  {calculateTopSpending(transactions, categories).map((item, index) => {
+                    const IconComponent = categoryIcons[item.title]
+                    const iconColor = getCategoryColor(item.title)
+                    return (
+                      // @ts-ignore
+                      <ListItem key={index}>
                         {/* @ts-ignore */}
-                        <Avatar variant="circular" alt="candice" src="https://docs.material-tailwind.com/img/face-1.jpg" />
-                      </ListItemPrefix>
-                      <div>
-                        <Typography variant="h6" color="blue-gray">
-                          {item.title}
-                        </Typography>
-                        <Typography variant="small" color="gray" className="font-normal">
-                          Rp. {item.amount.toLocaleString()}
-                        </Typography>
-                      </div>
-                    </ListItem>
-                  ))}
+                        <ListItemPrefix>
+                          {/* Use Tailwind CSS classes to style the icon */}
+                          <IconComponent className="text-3xl" style={{ color: iconColor }} />
+                        </ListItemPrefix>
+                        <div>
+                          <Typography variant="h6" color="blue-gray">
+                            {item.title}
+                          </Typography>
+                          <Typography variant="small" color="gray" className="font-normal">
+                            Rp. {item.amount.toLocaleString()}
+                          </Typography>
+                        </div>
+                      </ListItem>
+                    )
+                  })}
                 </List>
               )}
             </div>
