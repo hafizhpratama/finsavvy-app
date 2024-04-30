@@ -3,10 +3,14 @@ import { useContext, useState, useEffect, createContext } from 'react'
 import { supabase } from '../utils/supabase'
 
 // create a context for authentication
-const AuthContext = createContext<{ session: Session | null | undefined; user: User | null | undefined; signOut: () => void }>({
+const AuthContext = createContext<{
+  session: Session | null | undefined
+  user: User | null | undefined
+  signOut: () => Promise<void>
+}>({
   session: null,
   user: null,
-  signOut: () => {},
+  signOut: async () => {},
 })
 
 export const AuthProvider = ({ children }: any) => {
@@ -39,10 +43,18 @@ export const AuthProvider = ({ children }: any) => {
     }
   }, [])
 
+  const signOut = async () => {
+    try {
+      await supabase.auth.signOut()
+    } catch (error: any) {
+      console.error('Error signing out:', error.message)
+    }
+  }
+
   const value = {
     session,
     user,
-    signOut: () => supabase.auth.signOut(),
+    signOut,
   }
 
   // use a provider to pass down the value
