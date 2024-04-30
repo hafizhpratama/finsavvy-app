@@ -1,10 +1,10 @@
-import { Option } from '@material-tailwind/react'
 import React, { useState, useEffect } from 'react'
+import { Option } from '@material-tailwind/react'
+import { useAuth } from '../../../contexts/AuthContext'
+import { getTransactionsByUserId } from '../../../services/supabaseService'
 import Balance from '../../../components/Balance'
 import Card from '../../../components/Card'
 import IndexPage from '../../IndexPage'
-import { getTransactionsByUserId } from '../../../services/supabaseService'
-import { useAuth } from '../../../contexts/AuthContext'
 import Typography from '../../../components/Typography'
 import Select from '../../../components/Select'
 
@@ -21,20 +21,22 @@ const TransactionPage: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true)
-      const userId = user?.id
-      const data = await getTransactionsByUserId(userId, selectedMonth, selectedYear)
-
-      if (data) {
-        setTransactions(data)
-      } else {
+      try {
+        const userId = user?.id
+        const data = await getTransactionsByUserId(userId, selectedMonth, selectedYear)
+        setTransactions(data ?? [])
+      } catch (error) {
+        console.error('Error fetching transactions:', error)
         setTransactions([])
+      } finally {
+        setIsLoading(false)
       }
-      setIsLoading(false)
     }
 
     fetchData()
   }, [selectedMonth, selectedYear, refreshData])
 
+  // Filter transactions
   const inflowTransactions = transactions.filter(
     (transaction) => transaction.total && transaction.total > 0 && transaction.category_type === 'income',
   )
@@ -42,37 +44,30 @@ const TransactionPage: React.FC = () => {
     (transaction) => transaction.total && transaction.total > 0 && transaction.category_type === 'outcome',
   )
 
-  const getTotalAmount = (transactionList: Transaction[]) => {
-    return transactionList.reduce((total, transaction) => total + (transaction.total || 0), 0)
-  }
+  // Calculate total amount
+  const getTotalAmount = (transactionList: Transaction[]) =>
+    transactionList.reduce((total, transaction) => total + (transaction.total || 0), 0)
 
+  // Group transactions by date
   const groupedTransactions: { [key: string]: Transaction[] } = {}
   transactions.forEach((transaction) => {
     const date: string = transaction.date ?? ''
-    if (!groupedTransactions[date]) {
-      groupedTransactions[date] = []
-    }
-    groupedTransactions[date].push(transaction)
+    groupedTransactions[date] = [...(groupedTransactions[date] || []), transaction]
   })
 
+  // Format date
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString)
-    const options: Intl.DateTimeFormatOptions = {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    }
-    return date.toLocaleDateString('en-US', options)
+    return date.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })
   }
 
-  const getBalance = (inflow: number, outflow: number) => {
-    return inflow - outflow
-  }
+  // Calculate balance
+  const getBalance = (inflow: number, outflow: number) => inflow - outflow
 
-  const handleRefreshData = () => {
-    setRefreshData((prevState) => !prevState)
-  }
+  // Refresh data
+  const handleRefreshData = () => setRefreshData((prevState) => !prevState)
 
+  // Display alert message
   const handleReceiveAlertMessage = (message: string) => {
     setAlertMessage(message)
     setIsVisible(true)
@@ -81,9 +76,8 @@ const TransactionPage: React.FC = () => {
     }, 5000)
   }
 
-  const handleAlertClose = () => {
-    setIsVisible(false)
-  }
+  // Close alert
+  const handleAlertClose = () => setIsVisible(false)
 
   return (
     <>
@@ -119,17 +113,13 @@ const TransactionPage: React.FC = () => {
             balance={getBalance(getTotalAmount(inflowTransactions), Math.abs(getTotalAmount(outflowTransactions)))}
             loading={isLoading}
           />
-
           <Card title="Filter">
             <div className="flex w-full flex-col gap-4 sm:flex-row">
               <Select
                 value={String(selectedMonth)}
                 id="month"
                 label="Month"
-                onChange={(e) => {
-                  const selectedValue = parseInt(e || '')
-                  setSelectedMonth(selectedValue)
-                }}
+                onChange={(e) => setSelectedMonth(parseInt(e || ''))}
                 className="w-full"
               >
                 {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
@@ -142,10 +132,7 @@ const TransactionPage: React.FC = () => {
                 value={String(selectedYear)}
                 id="year"
                 label="Year"
-                onChange={(e) => {
-                  const selectedValue = parseInt(e || '')
-                  setSelectedYear(selectedValue)
-                }}
+                onChange={(e) => setSelectedYear(parseInt(e || ''))}
                 className="w-full"
               >
                 {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i).map((year) => (
@@ -156,93 +143,78 @@ const TransactionPage: React.FC = () => {
               </Select>
             </div>
           </Card>
-
           <Card title="Flow">
-            <div>
-              <div className="grid grid-cols-2 items-center">
-                <div>
-                  <Typography variant="h6">Inflow Total</Typography>
-                  {isLoading ? (
-                    <div className="max-w-full animate-pulse">
-                      <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
-                        &nbsp;
-                      </Typography>
-                    </div>
-                  ) : (
-                    <Typography variant="paragraph" color="green" className="font-semibold">
-                      Rp. {getTotalAmount(inflowTransactions).toLocaleString()}
-                    </Typography>
-                  )}
-                </div>
-                <div>
-                  <Typography variant="h6">Outflow Total</Typography>
-                  {isLoading ? (
-                    <div className="max-w-full animate-pulse">
-                      <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
-                        &nbsp;
-                      </Typography>
-                    </div>
-                  ) : (
-                    <Typography variant="paragraph" color="red" className="font-semibold">
-                      Rp. {Math.abs(getTotalAmount(outflowTransactions)).toLocaleString()}
-                    </Typography>
-                  )}
-                </div>
+            <div className="grid grid-cols-2 items-center">
+              <div>
+                <Typography variant="h6">Inflow Total</Typography>
+                {isLoading ? (
+                  <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
+                    &nbsp;
+                  </Typography>
+                ) : (
+                  <Typography variant="paragraph" color="green" className="font-semibold">
+                    Rp. {getTotalAmount(inflowTransactions).toLocaleString()}
+                  </Typography>
+                )}
+              </div>
+              <div>
+                <Typography variant="h6">Outflow Total</Typography>
+                {isLoading ? (
+                  <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
+                    &nbsp;
+                  </Typography>
+                ) : (
+                  <Typography variant="paragraph" color="red" className="font-semibold">
+                    Rp. {Math.abs(getTotalAmount(outflowTransactions)).toLocaleString()}
+                  </Typography>
+                )}
               </div>
             </div>
           </Card>
-
-          <Card title="Transaction">
+          <Card title="Transactions">
             {isLoading ? (
               <>
-                <div className="max-w-full animate-pulse">
-                  <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
-                    &nbsp;
-                  </Typography>
-                </div>
-                <div className="max-w-full animate-pulse">
-                  <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
-                    &nbsp;
-                  </Typography>
-                </div>
-                <div className="max-w-full animate-pulse">
-                  <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
-                    &nbsp;
-                  </Typography>
-                </div>
-                <div className="max-w-full animate-pulse">
-                  <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
-                    &nbsp;
-                  </Typography>
-                </div>
+                {[1, 2, 3, 4].map((_, index) => (
+                  <div key={index} className="max-w-full animate-pulse">
+                    <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
+                      &nbsp;
+                    </Typography>
+                  </div>
+                ))}
               </>
             ) : (
               <>
-                {Object.entries(groupedTransactions).map(([date, transactions]) => (
-                  <div key={date} className="mb-8 border-b border-gray-200">
-                    <Typography variant="h6" color="indigo">
-                      {formatDate(date)}
-                    </Typography>
-                    <div className="divide-y divide-gray-200">
-                      {transactions.map((transaction, index) => (
-                        <div key={index} className="flex items-center justify-between py-2">
-                          <div className="flex-1">
-                            <Typography variant="paragraph">{transaction.notes}</Typography>
+                {Object.entries(groupedTransactions).length === 0 ? (
+                  <div className="text-center">
+                    <Typography variant="paragraph">No transactions found for this period.</Typography>
+                  </div>
+                ) : (
+                  Object.entries(groupedTransactions).map(([date, transactions]) => (
+                    <div key={date} className="mb-8 border-b border-gray-200">
+                      <Typography variant="h6" color="indigo">
+                        {formatDate(date)}
+                      </Typography>
+                      <div className="divide-y divide-gray-200">
+                        {transactions.map((transaction, index) => (
+                          <div key={index} className="flex items-center justify-between py-2">
+                            <div className="flex-1">
+                              <Typography variant="paragraph">{transaction.notes}</Typography>
+                            </div>
+                            <Typography variant="paragraph">Rp. {transaction.total?.toLocaleString() ?? '0'}</Typography>
                           </div>
-                          <Typography variant="paragraph">Rp. {transaction.total?.toLocaleString() ?? '0'}</Typography>
+                        ))}
+                        <div className="flex items-center justify-between py-2">
+                          <Typography variant="paragraph" className="font-semibold">
+                            Total
+                          </Typography>
+                          <Typography variant="paragraph" className="font-semibold">
+                            Rp. {getTotalAmount(transactions).toLocaleString()}
+                          </Typography>
                         </div>
-                      ))}
-                      <div className="flex items-center justify-between py-2">
-                        <Typography variant="paragraph" className="font-semibold">
-                          Total
-                        </Typography>
-                        <Typography variant="paragraph" className="font-semibold">
-                          Rp. {getTotalAmount(transactions).toLocaleString()}
-                        </Typography>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </>
             )}
           </Card>

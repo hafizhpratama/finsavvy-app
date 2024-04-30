@@ -1,80 +1,67 @@
 import React, { useState, useEffect } from 'react'
 import ReactApexChart from 'react-apexcharts'
 import { ApexOptions } from 'apexcharts'
-import { Avatar, List, ListItem, ListItemPrefix, Option } from '@material-tailwind/react'
+import { Alert, Avatar, List, ListItem, ListItemPrefix, Option } from '@material-tailwind/react'
 import Balance from '../../components/Balance'
 import Card from '../../components/Card'
 import IndexPage from '../IndexPage'
-import { getTransactionsByUserId } from '../../services/supabaseService'
+import { getTransactionsByUserId, getCategories } from '../../services/supabaseService'
 import { useAuth } from '../../contexts/AuthContext'
-import { getCategories } from '../../services/supabaseService'
-import Datepicker from 'react-tailwindcss-datepicker'
+import Datepicker, { DateValueType } from 'react-tailwindcss-datepicker'
 import Typography from '../../components/Typography'
 import Select from '../../components/Select'
+import { BiCheckCircle } from 'react-icons/bi'
 
 const DashboardPage: React.FC = () => {
+  const { user } = useAuth()
+  const today = new Date()
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [categories, setCategories] = useState<Category[]>([])
-  const { user } = useAuth()
-  const today = new Date()
-  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear())
+  const [selectedYear, setSelectedYear] = useState<number>(today.getFullYear())
   const [refreshData, setRefreshData] = useState<boolean>(false)
-  const [isVisible, setIsVisible] = useState(false)
+  const [isVisible, setIsVisible] = useState<boolean>(false)
   const [alertMessage, setAlertMessage] = useState<string>('')
-
-  const handleAlertClose = () => {
-    setIsVisible(false)
-  }
-
-  const handleRefreshData = () => {
-    setRefreshData((prevState) => !prevState)
-  }
-
   const [monthlySpendingData, setMonthlySpendingData] = useState<{ label: string; amount: number }[]>([])
   const [pieChartData, setPieChartData] = useState<{ label: string; amount: number }[]>([])
-
-  const [filterDate, setFilterDate] = useState<{ startDate: string; endDate: string }>({
+  const [filterDate, setFilterDate] = useState<DateValueType>({
     startDate: today.toISOString().split('T')[0],
     endDate: today.toISOString().split('T')[0],
   })
 
-  const handleValueChange = (filterDate: any) => {
+  const handleRefreshData = () => setRefreshData((prevState) => !prevState)
+
+  const handleValueChange = (value: DateValueType) => {
     setIsLoading(true)
-    setFilterDate(filterDate)
-    calculatePieChartData(transactions, filterDate.startDate, filterDate.endDate)
-    setIsLoading(false)
+    setFilterDate(value)
   }
 
   useEffect(() => {
-    setIsLoading(true)
-    const pieChartData = calculatePieChartData(transactions, filterDate.startDate, filterDate.endDate)
+    const fetchData = async () => {
+      try {
+        setIsLoading(true)
+        const userId = user?.id
+        const [transactionData, categoryData] = await Promise.all([getTransactionsByUserId(userId), getCategories(userId)])
+        if (transactionData) setTransactions(transactionData)
+        if (categoryData) setCategories(categoryData)
+      } catch (error) {
+        console.error('Error fetching data:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchData()
+  }, [refreshData, user])
+
+  useEffect(() => {
+    const pieChartData = calculatePieChartData(transactions, filterDate)
     setPieChartData(pieChartData)
-    setIsLoading(false)
   }, [transactions, filterDate])
 
   useEffect(() => {
-    async function fetchTransactions() {
-      setIsLoading(true)
-      const userId = user?.id
-      const data = await getTransactionsByUserId(userId)
-      if (data) {
-        setTransactions(data)
-      }
-      setIsLoading(false)
-    }
-    async function fetchCategories() {
-      setIsLoading(true)
-      const userId = user?.id
-      const data = await getCategories(userId)
-      if (data) {
-        setCategories(data)
-      }
-      setIsLoading(false)
-    }
-    fetchTransactions()
-    fetchCategories()
-  }, [refreshData])
+    const monthlySpendingData = calculateMonthlySpending(transactions, selectedYear)
+    setMonthlySpendingData(monthlySpendingData)
+  }, [transactions, selectedYear])
 
   const calculateTopSpending = (transactions: Transaction[], categories: Category[]): { title: string; amount: number }[] => {
     const categoryMap: { [key: string]: number } = {}
@@ -92,10 +79,7 @@ const DashboardPage: React.FC = () => {
   }
 
   const calculateMonthlySpending = (transactions: Transaction[], selectedYear: number): { label: string; amount: number }[] => {
-    const today = new Date()
-    const thisYear = today.getFullYear()
-    const thisMonth = today.getMonth()
-    const monthsToShow = selectedYear === thisYear ? thisMonth + 1 : 12
+    const monthsToShow = selectedYear === today.getFullYear() ? today.getMonth() + 1 : 12
 
     const monthlySpending: { [key: string]: number } = {}
 
@@ -110,34 +94,18 @@ const DashboardPage: React.FC = () => {
       monthlySpending[month.toLocaleDateString('default', { month: 'long' })] = monthTotal
     }
 
-    return Object.entries(monthlySpending).map(([month, total]) => ({
-      label: month,
-      amount: total,
-    }))
+    return Object.entries(monthlySpending).map(([month, total]) => ({ label: month, amount: total }))
   }
 
-  useEffect(() => {
-    setIsLoading(true)
-    const monthlySpendingData = calculateMonthlySpending(transactions, selectedYear)
-    setMonthlySpendingData(monthlySpendingData)
-    setIsLoading(false)
-  }, [transactions, selectedYear])
-
-  const topSpendingData = calculateTopSpending(transactions, categories)
-
-  const calculatePieChartData = (
-    transactions: Transaction[],
-    startDate: string | null,
-    endDate: string | null,
-  ): { label: string; amount: number }[] => {
+  const calculatePieChartData = (transactions: Transaction[], filterDate: DateValueType): { label: string; amount: number }[] => {
     const categoryMap: { [key: string]: number } = {}
 
     const filteredTransactions = transactions.filter((transaction) => {
       const transactionDate = new Date(transaction.date || '').toISOString().split('T')[0]
 
       return (
-        transactionDate >= (startDate || new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0]) &&
-        transactionDate <= (endDate || new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0])
+        transactionDate >= (filterDate?.startDate || new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0]) &&
+        transactionDate <= (filterDate?.endDate || new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0])
       )
     })
 
@@ -255,30 +223,11 @@ const DashboardPage: React.FC = () => {
     <>
       <IndexPage refreshData={handleRefreshData} sendAlertMessage={handleReceiveAlertMessage}>
         {isVisible && (
-          <div
-            id="alert-3"
-            className="mx-4 mb-4 flex items-center rounded-lg bg-green-50 p-4 text-green-800 dark:bg-gray-800 dark:text-green-400"
-            role="alert"
-          >
-            <div className="ms-3 text-sm font-medium">{alertMessage}</div>
-            <button
-              type="button"
-              className="-mx-1.5 -my-1.5 ms-auto inline-flex h-8 w-8 items-center justify-center rounded-lg bg-green-50 p-1.5 text-green-500 hover:bg-green-200 focus:ring-2 focus:ring-green-400 dark:bg-gray-800 dark:text-green-400 dark:hover:bg-gray-700"
-              aria-label="Close"
-              onClick={handleAlertClose}
-            >
-              <span className="sr-only">Close</span>
-              <svg className="h-3 w-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-                <path
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-                />
-              </svg>
-            </button>
-          </div>
+          <>
+            <Alert icon={<BiCheckCircle />} className="rounded-none border-l-4 border-[#2ec946] bg-[#2ec946]/10 font-medium text-[#2ec946]">
+              {alertMessage}
+            </Alert>
+          </>
         )}
 
         <div className="mb-16">
@@ -357,7 +306,7 @@ const DashboardPage: React.FC = () => {
             ) : (
               <div className="flex flex-col items-center">
                 {pieChartData.length > 0 ? (
-                  <div className="w-full">
+                  <div className="mb-4 w-full">
                     <ReactApexChart
                       options={{ ...options, colors: pieChartColors, legend: { position: 'bottom' } }}
                       series={pieChartData.map((item) => item.amount)}
@@ -423,7 +372,7 @@ const DashboardPage: React.FC = () => {
               ) : (
                 // @ts-ignore
                 <List>
-                  {topSpendingData.map((item, index) => (
+                  {calculateTopSpending(transactions, categories).map((item, index) => (
                     // @ts-ignore
                     <ListItem key={index}>
                       {/* @ts-ignore */}
