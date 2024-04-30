@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import ReactApexChart from 'react-apexcharts'
 import { ApexOptions } from 'apexcharts'
-import { Avatar, List, ListItem, ListItemPrefix, Option, Select, Typography } from '@material-tailwind/react'
+import { Avatar, List, ListItem, ListItemPrefix, Option } from '@material-tailwind/react'
 import Balance from '../../components/Balance'
 import Card from '../../components/Card'
 import IndexPage from '../IndexPage'
@@ -9,6 +9,8 @@ import { getTransactionsByUserId } from '../../services/supabaseService'
 import { useAuth } from '../../contexts/AuthContext'
 import { getCategories } from '../../services/supabaseService'
 import Datepicker from 'react-tailwindcss-datepicker'
+import Typography from '../../components/Typography'
+import Select from '../../components/Select'
 
 const DashboardPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true)
@@ -295,9 +297,6 @@ const DashboardPage: React.FC = () => {
                   const selectedValue = parseInt(e || '')
                   setSelectedYear(selectedValue)
                 }}
-                placeholder=""
-                onPointerEnterCapture={() => {}}
-                onPointerLeaveCapture={() => {}}
                 className="w-full"
               >
                 {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i).map((year) => (
@@ -309,54 +308,19 @@ const DashboardPage: React.FC = () => {
             </div>
             {isLoading ? (
               <div className="max-w-full animate-pulse">
-                <Typography
-                  as="div"
-                  variant="h1"
-                  className="mb-4 h-6 bg-gray-300"
-                  placeholder=""
-                  onPointerEnterCapture={() => {}}
-                  onPointerLeaveCapture={() => {}}
-                >
+                <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
                   &nbsp;
                 </Typography>
-                <Typography
-                  as="div"
-                  variant="h1"
-                  className="mb-4 h-6 bg-gray-300"
-                  placeholder=""
-                  onPointerEnterCapture={() => {}}
-                  onPointerLeaveCapture={() => {}}
-                >
+                <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
                   &nbsp;
                 </Typography>
-                <Typography
-                  as="div"
-                  variant="h1"
-                  className="mb-4 h-6 bg-gray-300"
-                  placeholder=""
-                  onPointerEnterCapture={() => {}}
-                  onPointerLeaveCapture={() => {}}
-                >
+                <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
                   &nbsp;
                 </Typography>
-                <Typography
-                  as="div"
-                  variant="h1"
-                  className="mb-4 h-6 bg-gray-300"
-                  placeholder=""
-                  onPointerEnterCapture={() => {}}
-                  onPointerLeaveCapture={() => {}}
-                >
+                <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
                   &nbsp;
                 </Typography>
-                <Typography
-                  as="div"
-                  variant="h1"
-                  className="mb-4 h-6 bg-gray-300"
-                  placeholder=""
-                  onPointerEnterCapture={() => {}}
-                  onPointerLeaveCapture={() => {}}
-                >
+                <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
                   &nbsp;
                 </Typography>
               </div>
@@ -374,54 +338,19 @@ const DashboardPage: React.FC = () => {
             </div>
             {isLoading ? (
               <div className="max-w-full animate-pulse">
-                <Typography
-                  as="div"
-                  variant="h1"
-                  className="mb-4 h-6 bg-gray-300"
-                  placeholder=""
-                  onPointerEnterCapture={() => {}}
-                  onPointerLeaveCapture={() => {}}
-                >
+                <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
                   &nbsp;
                 </Typography>
-                <Typography
-                  as="div"
-                  variant="h1"
-                  className="mb-4 h-6 bg-gray-300"
-                  placeholder=""
-                  onPointerEnterCapture={() => {}}
-                  onPointerLeaveCapture={() => {}}
-                >
+                <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
                   &nbsp;
                 </Typography>
-                <Typography
-                  as="div"
-                  variant="h1"
-                  className="mb-4 h-6 bg-gray-300"
-                  placeholder=""
-                  onPointerEnterCapture={() => {}}
-                  onPointerLeaveCapture={() => {}}
-                >
+                <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
                   &nbsp;
                 </Typography>
-                <Typography
-                  as="div"
-                  variant="h1"
-                  className="mb-4 h-6 bg-gray-300"
-                  placeholder=""
-                  onPointerEnterCapture={() => {}}
-                  onPointerLeaveCapture={() => {}}
-                >
+                <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
                   &nbsp;
                 </Typography>
-                <Typography
-                  as="div"
-                  variant="h1"
-                  className="mb-4 h-6 bg-gray-300"
-                  placeholder=""
-                  onPointerEnterCapture={() => {}}
-                  onPointerLeaveCapture={() => {}}
-                >
+                <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
                   &nbsp;
                 </Typography>
               </div>
@@ -454,24 +383,10 @@ const DashboardPage: React.FC = () => {
 
                     {/* Right container */}
                     <div className="w-full">
-                      <Typography
-                        as="div"
-                        variant="h1"
-                        className="mb-4 h-6 bg-gray-300"
-                        placeholder=""
-                        onPointerEnterCapture={() => {}}
-                        onPointerLeaveCapture={() => {}}
-                      >
+                      <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
                         &nbsp;
                       </Typography>
-                      <Typography
-                        as="div"
-                        variant="h1"
-                        className="mb-2 h-6 bg-gray-300"
-                        placeholder=""
-                        onPointerEnterCapture={() => {}}
-                        onPointerLeaveCapture={() => {}}
-                      >
+                      <Typography as="div" variant="h1" className="mb-2 h-6 bg-gray-300">
                         &nbsp;
                       </Typography>
                     </div>
@@ -482,24 +397,10 @@ const DashboardPage: React.FC = () => {
 
                     {/* Right container */}
                     <div className="w-full">
-                      <Typography
-                        as="div"
-                        variant="h1"
-                        className="mb-4 h-6 bg-gray-300"
-                        placeholder=""
-                        onPointerEnterCapture={() => {}}
-                        onPointerLeaveCapture={() => {}}
-                      >
+                      <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
                         &nbsp;
                       </Typography>
-                      <Typography
-                        as="div"
-                        variant="h1"
-                        className="mb-2 h-6 bg-gray-300"
-                        placeholder=""
-                        onPointerEnterCapture={() => {}}
-                        onPointerLeaveCapture={() => {}}
-                      >
+                      <Typography as="div" variant="h1" className="mb-2 h-6 bg-gray-300">
                         &nbsp;
                       </Typography>
                     </div>
@@ -510,61 +411,31 @@ const DashboardPage: React.FC = () => {
 
                     {/* Right container */}
                     <div className="w-full">
-                      <Typography
-                        as="div"
-                        variant="h1"
-                        className="mb-4 h-6 bg-gray-300"
-                        placeholder=""
-                        onPointerEnterCapture={() => {}}
-                        onPointerLeaveCapture={() => {}}
-                      >
+                      <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
                         &nbsp;
                       </Typography>
-                      <Typography
-                        as="div"
-                        variant="h1"
-                        className="mb-2 h-6 bg-gray-300"
-                        placeholder=""
-                        onPointerEnterCapture={() => {}}
-                        onPointerLeaveCapture={() => {}}
-                      >
+                      <Typography as="div" variant="h1" className="mb-2 h-6 bg-gray-300">
                         &nbsp;
                       </Typography>
                     </div>
                   </div>
                 </>
               ) : (
-                <List placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
+                // @ts-ignore
+                <List>
                   {topSpendingData.map((item, index) => (
-                    <ListItem key={index} placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
-                      <ListItemPrefix placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
-                        <Avatar
-                          variant="circular"
-                          alt="candice"
-                          src="https://docs.material-tailwind.com/img/face-1.jpg"
-                          placeholder=""
-                          onPointerEnterCapture={() => {}}
-                          onPointerLeaveCapture={() => {}}
-                        />
+                    // @ts-ignore
+                    <ListItem key={index}>
+                      {/* @ts-ignore */}
+                      <ListItemPrefix>
+                        {/* @ts-ignore */}
+                        <Avatar variant="circular" alt="candice" src="https://docs.material-tailwind.com/img/face-1.jpg" />
                       </ListItemPrefix>
                       <div>
-                        <Typography
-                          variant="h6"
-                          color="blue-gray"
-                          placeholder=""
-                          onPointerEnterCapture={() => {}}
-                          onPointerLeaveCapture={() => {}}
-                        >
+                        <Typography variant="h6" color="blue-gray">
                           {item.title}
                         </Typography>
-                        <Typography
-                          variant="small"
-                          color="gray"
-                          className="font-normal"
-                          placeholder=""
-                          onPointerEnterCapture={() => {}}
-                          onPointerLeaveCapture={() => {}}
-                        >
+                        <Typography variant="small" color="gray" className="font-normal">
                           Rp. {item.amount.toLocaleString()}
                         </Typography>
                       </div>

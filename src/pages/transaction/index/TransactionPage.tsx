@@ -1,10 +1,12 @@
-import { Option, Select, Typography } from '@material-tailwind/react'
+import { Option } from '@material-tailwind/react'
 import React, { useState, useEffect } from 'react'
 import Balance from '../../../components/Balance'
 import Card from '../../../components/Card'
 import IndexPage from '../../IndexPage'
 import { getTransactionsByUserId } from '../../../services/supabaseService'
 import { useAuth } from '../../../contexts/AuthContext'
+import Typography from '../../../components/Typography'
+import Select from '../../../components/Select'
 
 const TransactionPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true)
@@ -128,9 +130,6 @@ const TransactionPage: React.FC = () => {
                   const selectedValue = parseInt(e || '')
                   setSelectedMonth(selectedValue)
                 }}
-                placeholder=""
-                onPointerEnterCapture={() => {}}
-                onPointerLeaveCapture={() => {}}
                 className="w-full"
               >
                 {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
@@ -147,9 +146,6 @@ const TransactionPage: React.FC = () => {
                   const selectedValue = parseInt(e || '')
                   setSelectedYear(selectedValue)
                 }}
-                placeholder=""
-                onPointerEnterCapture={() => {}}
-                onPointerLeaveCapture={() => {}}
                 className="w-full"
               >
                 {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i).map((year) => (
@@ -165,61 +161,29 @@ const TransactionPage: React.FC = () => {
             <div>
               <div className="grid grid-cols-2 items-center">
                 <div>
-                  <Typography variant="h6" placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
-                    Inflow Total
-                  </Typography>
+                  <Typography variant="h6">Inflow Total</Typography>
                   {isLoading ? (
                     <div className="max-w-full animate-pulse">
-                      <Typography
-                        as="div"
-                        variant="h1"
-                        className="mb-4 h-6 bg-gray-300"
-                        placeholder=""
-                        onPointerEnterCapture={() => {}}
-                        onPointerLeaveCapture={() => {}}
-                      >
+                      <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
                         &nbsp;
                       </Typography>
                     </div>
                   ) : (
-                    <Typography
-                      variant="paragraph"
-                      color="green"
-                      className="font-semibold"
-                      placeholder=""
-                      onPointerEnterCapture={() => {}}
-                      onPointerLeaveCapture={() => {}}
-                    >
+                    <Typography variant="paragraph" color="green" className="font-semibold">
                       Rp. {getTotalAmount(inflowTransactions).toLocaleString()}
                     </Typography>
                   )}
                 </div>
                 <div>
-                  <Typography variant="h6" placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
-                    Outflow Total
-                  </Typography>
+                  <Typography variant="h6">Outflow Total</Typography>
                   {isLoading ? (
                     <div className="max-w-full animate-pulse">
-                      <Typography
-                        as="div"
-                        variant="h1"
-                        className="mb-4 h-6 bg-gray-300"
-                        placeholder=""
-                        onPointerEnterCapture={() => {}}
-                        onPointerLeaveCapture={() => {}}
-                      >
+                      <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
                         &nbsp;
                       </Typography>
                     </div>
                   ) : (
-                    <Typography
-                      variant="paragraph"
-                      color="red"
-                      className="font-semibold"
-                      placeholder=""
-                      onPointerEnterCapture={() => {}}
-                      onPointerLeaveCapture={() => {}}
-                    >
+                    <Typography variant="paragraph" color="red" className="font-semibold">
                       Rp. {Math.abs(getTotalAmount(outflowTransactions)).toLocaleString()}
                     </Typography>
                   )}
@@ -232,50 +196,22 @@ const TransactionPage: React.FC = () => {
             {isLoading ? (
               <>
                 <div className="max-w-full animate-pulse">
-                  <Typography
-                    as="div"
-                    variant="h1"
-                    className="mb-4 h-6 bg-gray-300"
-                    placeholder=""
-                    onPointerEnterCapture={() => {}}
-                    onPointerLeaveCapture={() => {}}
-                  >
+                  <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
                     &nbsp;
                   </Typography>
                 </div>
                 <div className="max-w-full animate-pulse">
-                  <Typography
-                    as="div"
-                    variant="h1"
-                    className="mb-4 h-6 bg-gray-300"
-                    placeholder=""
-                    onPointerEnterCapture={() => {}}
-                    onPointerLeaveCapture={() => {}}
-                  >
+                  <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
                     &nbsp;
                   </Typography>
                 </div>
                 <div className="max-w-full animate-pulse">
-                  <Typography
-                    as="div"
-                    variant="h1"
-                    className="mb-4 h-6 bg-gray-300"
-                    placeholder=""
-                    onPointerEnterCapture={() => {}}
-                    onPointerLeaveCapture={() => {}}
-                  >
+                  <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
                     &nbsp;
                   </Typography>
                 </div>
                 <div className="max-w-full animate-pulse">
-                  <Typography
-                    as="div"
-                    variant="h1"
-                    className="mb-4 h-6 bg-gray-300"
-                    placeholder=""
-                    onPointerEnterCapture={() => {}}
-                    onPointerLeaveCapture={() => {}}
-                  >
+                  <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
                     &nbsp;
                   </Typography>
                 </div>
@@ -284,50 +220,23 @@ const TransactionPage: React.FC = () => {
               <>
                 {Object.entries(groupedTransactions).map(([date, transactions]) => (
                   <div key={date} className="mb-8 border-b border-gray-200">
-                    <Typography
-                      variant="h6"
-                      color="indigo"
-                      placeholder=""
-                      onPointerEnterCapture={() => {}}
-                      onPointerLeaveCapture={() => {}}
-                    >
+                    <Typography variant="h6" color="indigo">
                       {formatDate(date)}
                     </Typography>
                     <div className="divide-y divide-gray-200">
                       {transactions.map((transaction, index) => (
                         <div key={index} className="flex items-center justify-between py-2">
                           <div className="flex-1">
-                            <Typography
-                              variant="paragraph"
-                              placeholder=""
-                              onPointerEnterCapture={() => {}}
-                              onPointerLeaveCapture={() => {}}
-                            >
-                              {transaction.notes}
-                            </Typography>
+                            <Typography variant="paragraph">{transaction.notes}</Typography>
                           </div>
-                          <Typography variant="paragraph" placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
-                            Rp. {transaction.total?.toLocaleString() ?? '0'}
-                          </Typography>
+                          <Typography variant="paragraph">Rp. {transaction.total?.toLocaleString() ?? '0'}</Typography>
                         </div>
                       ))}
                       <div className="flex items-center justify-between py-2">
-                        <Typography
-                          variant="paragraph"
-                          className="font-semibold"
-                          placeholder=""
-                          onPointerEnterCapture={() => {}}
-                          onPointerLeaveCapture={() => {}}
-                        >
+                        <Typography variant="paragraph" className="font-semibold">
                           Total
                         </Typography>
-                        <Typography
-                          variant="paragraph"
-                          className="font-semibold"
-                          placeholder=""
-                          onPointerEnterCapture={() => {}}
-                          onPointerLeaveCapture={() => {}}
-                        >
+                        <Typography variant="paragraph" className="font-semibold">
                           Rp. {getTotalAmount(transactions).toLocaleString()}
                         </Typography>
                       </div>

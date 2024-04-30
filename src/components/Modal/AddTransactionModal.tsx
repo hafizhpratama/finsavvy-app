@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Button, Input, Option, Select, Textarea, Typography } from '@material-tailwind/react'
+import { Option, Textarea } from '@material-tailwind/react'
 import { useAuth } from '../../contexts/AuthContext'
 import { addTransaction, getCategoriesByType } from '../../services/supabaseService'
+import Typography from '../Typography'
+import Select from '../Select'
+import Input from '../Input'
+import Button from '../Button'
 
 interface AddTransactionModalProps {
   closeModal: () => void
@@ -50,14 +54,7 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ closeModal, r
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm">
       <div className="relative w-2/3 max-w-lg rounded-2xl bg-white">
         <div className="rounded-t-2xl border-b border-gray-200 px-6 py-4">
-          <Typography
-            variant="h6"
-            color="black"
-            className="font-semibold"
-            placeholder=""
-            onPointerEnterCapture={() => {}}
-            onPointerLeaveCapture={() => {}}
-          >
+          <Typography variant="h6" color="black" className="font-semibold">
             Add Transaction
           </Typography>
         </div>
@@ -72,10 +69,6 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ closeModal, r
                 onChange={(e) => {
                   setTotal(e.target.value)
                 }}
-                crossOrigin={[]}
-                placeholder=""
-                onPointerEnterCapture={() => {}}
-                onPointerLeaveCapture={() => {}}
               />
 
               <Select
@@ -86,9 +79,6 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ closeModal, r
                   setType(e)
                   setCategory('')
                 }}
-                placeholder=""
-                onPointerEnterCapture={() => {}}
-                onPointerLeaveCapture={() => {}}
               >
                 <Option value="">Select Type</Option>
                 <Option value="income">Income</Option>
@@ -102,9 +92,6 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ closeModal, r
                   onChange={(e: any) => {
                     setCategory(e)
                   }}
-                  placeholder=""
-                  onPointerEnterCapture={() => {}}
-                  onPointerLeaveCapture={() => {}}
                 >
                   {categories.map((cat) => (
                     <Option key={cat.category_id} value={cat.category_id.toString()}>
@@ -113,41 +100,16 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ closeModal, r
                   ))}
                 </Select>
               )}
-              <Textarea
-                variant="outlined"
-                label="Note"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder=""
-                onPointerEnterCapture={() => {}}
-                onPointerLeaveCapture={() => {}}
-              />
-              <Input
-                type="date"
-                variant="outlined"
-                label="Date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                crossOrigin={[]}
-                placeholder=""
-                onPointerEnterCapture={() => {}}
-                onPointerLeaveCapture={() => {}}
-              />
+              {/* @ts-ignore */}
+              <Textarea variant="outlined" label="Note" value={notes} onChange={(e) => setNotes(e.target.value)} />
+              <Input type="date" variant="outlined" label="Date" value={date} onChange={(e) => setDate(e.target.value)} />
             </div>
           </div>
           <div className="flex justify-end gap-2 border-t py-4">
-            <Button
-              variant="outlined"
-              onClick={closeModal}
-              placeholder=""
-              onPointerEnterCapture={() => {}}
-              onPointerLeaveCapture={() => {}}
-            >
+            <Button variant="outlined" onClick={closeModal}>
               Cancel
             </Button>
-            <Button onClick={handleSave} placeholder="" onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}}>
-              Save
-            </Button>
+            <Button onClick={handleSave}>Save</Button>
           </div>
         </div>
       </div>

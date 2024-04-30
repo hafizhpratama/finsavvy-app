@@ -1,5 +1,5 @@
-import { Typography } from '@material-tailwind/react'
 import React from 'react'
+import Typography from './Typography'
 
 interface CardProps {
   title: string
@@ -11,14 +11,7 @@ const Card: React.FC<CardProps> = ({ title, children }) => {
     <div className="p-4">
       <div className="rounded-2xl bg-white">
         <div className="rounded-t-2xl border-b border-gray-200 px-6 py-4">
-          <Typography
-            variant="h6"
-            color="black"
-            className="font-semibold"
-            placeholder=""
-            onPointerEnterCapture={() => {}}
-            onPointerLeaveCapture={() => {}}
-          >
+          <Typography variant="h6" color="black" className="font-semibold">
             {title}
           </Typography>
         </div>

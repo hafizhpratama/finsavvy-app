@@ -4,7 +4,7 @@ import LoginPage from './pages/login/index/LoginPage'
 import TransactionPage from './pages/transaction/index/TransactionPage'
 import { AuthProvider } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
-import DashboardPage from './pages/index/DashboardPage'
+import DashboardPage from './pages/dashboard/DashboardPage'
 
 function App() {
   return (
