@@ -42,7 +42,7 @@ export async function getTransactionsByUserId(
   }
 }
 
-export const getCategories = async (userId?: string): Promise<Category[] | null> => {
+export async function getCategories(userId?: string, type?: string): Promise<Category[] | null> {
   try {
     let query = supabase.from('categories').select('*')
 
@@ -52,27 +52,8 @@ export const getCategories = async (userId?: string): Promise<Category[] | null>
       query = query.not('user_id', 'is', null)
     }
 
-    const { data, error } = await query
-
-    if (error) {
-      throw error
-    }
-
-    return data ?? null
-  } catch (error: any) {
-    console.error('Error fetching categories:', error.message)
-    return null
-  }
-}
-
-export const getCategoriesByType = async (userId?: string, type?: string): Promise<Category[] | null> => {
-  try {
-    let query = supabase.from('categories').select('*')
-
-    if (userId) {
-      query = query.or(`user_id.eq.${userId},user_id.is.null`).eq('transaction_type', type)
-    } else {
-      query = query.not('user_id', 'is', null).eq('transaction_type', type)
+    if (type) {
+      query = query.eq('transaction_type', type)
     }
 
     const { data, error } = await query

@@ -16,17 +16,9 @@ const IndexPage: React.FC<IndexPageProps> = ({ children, refreshData, sendAlertM
   const [showOptions, setShowOptions] = useState(false)
   const { signOut } = useAuth()
 
-  const openModal = () => {
-    setShowModal(true)
-  }
-
-  const closeModal = () => {
-    setShowModal(false)
-  }
-
-  const toggleOptions = () => {
-    setShowOptions(!showOptions)
-  }
+  const openModal = () => setShowModal(true)
+  const closeModal = () => setShowModal(false)
+  const toggleOptions = () => setShowOptions(!showOptions)
 
   const handleLogout = async () => {
     try {
@@ -42,7 +34,6 @@ const IndexPage: React.FC<IndexPageProps> = ({ children, refreshData, sendAlertM
       <div className="mb-2 mr-4 flex justify-end">
         <div className="relative">
           <div onClick={toggleOptions} className="h-10 w-10 cursor-pointer rounded-full bg-blue-gray-500">
-            {/* You can replace the content with your profile image */}
             <FaUserCircle size={24} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform text-white" />
           </div>
           {showOptions && (

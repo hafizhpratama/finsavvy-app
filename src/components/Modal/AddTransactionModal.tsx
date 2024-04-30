@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Option, Textarea } from '@material-tailwind/react'
 import { useAuth } from '../../contexts/AuthContext'
-import { addTransaction, getCategoriesByType } from '../../services/supabaseService'
+import { addTransaction, getCategories } from '../../services/supabaseService'
 import Typography from '../Typography'
 import Select from '../Select'
 import Input from '../Input'
@@ -24,7 +24,7 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ closeModal, r
 
   useEffect(() => {
     const fetchCategories = async () => {
-      const data = await getCategoriesByType(user?.id, type)
+      const data = await getCategories(user?.id, type)
       if (data) {
         setCategories(data)
       }
