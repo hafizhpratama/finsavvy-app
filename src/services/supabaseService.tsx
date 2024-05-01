@@ -15,18 +15,20 @@ export async function addTransaction(data: Transaction, user: User | null | unde
   }
 }
 
-export async function getTransactionsByUserId(
-  userId?: string,
-  month: number = new Date().getMonth() + 1,
-  year: number = new Date().getFullYear(),
-): Promise<Transaction[] | null> {
+export async function getTransactionsByUserId(userId: string, month?: number, year?: number): Promise<Transaction[] | null> {
   try {
-    const { data, error } = await supabase
-      .from('transaction')
-      .select('*')
-      .eq('user_id', userId)
-      .gte('date', `${year}-${month.toString().padStart(2, '0')}-01T00:00:00.000Z`)
-      .lt('date', `${year}-${(month + 1).toString().padStart(2, '0')}-01T00:00:00.000Z`)
+    let query = supabase.from('transaction').select('*').eq('user_id', userId)
+
+    if (month !== undefined && year !== undefined) {
+      const currentMonth = month
+      const currentYear = year
+
+      query = query
+        .gte('date', `${currentYear}-${currentMonth.toString().padStart(2, '0')}-01T00:00:00.000Z`)
+        .lt('date', `${currentYear}-${(currentMonth + 1).toString().padStart(2, '0')}-01T00:00:00.000Z`)
+    }
+
+    const { data, error } = await query
 
     if (error) {
       throw error

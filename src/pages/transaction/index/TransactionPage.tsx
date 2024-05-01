@@ -24,7 +24,7 @@ const TransactionPage: React.FC = () => {
     const fetchData = async () => {
       setIsLoading(true)
       try {
-        const userId = user?.id
+        const userId = user?.id || ''
         const data = await getTransactionsByUserId(userId, selectedMonth, selectedYear)
         setTransactions(data ?? [])
       } catch (error: any) {

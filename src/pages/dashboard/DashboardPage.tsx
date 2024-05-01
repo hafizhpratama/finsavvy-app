@@ -42,6 +42,7 @@ const DashboardPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [monthlySpendingData, setMonthlySpendingData] = useState<{ label: string; amount: number }[]>([])
   const [pieChartData, setPieChartData] = useState<{ label: string; amount: number }[]>([])
+  const [selectedFilter, setSelectedFilter] = useState<string>('all')
   const [filterDate, setFilterDate] = useState<DateValueType>({
     startDate: today.toISOString().split('T')[0],
     endDate: today.toISOString().split('T')[0],
@@ -52,13 +53,24 @@ const DashboardPage: React.FC = () => {
   const handleValueChange = (value: DateValueType) => {
     setIsLoading(true)
     setFilterDate(value)
+    const filteredPieChartData = calculatePieChartData(transactions, value, selectedFilter)
+    setPieChartData(filteredPieChartData)
+    setIsLoading(false)
+  }
+
+  const handleFilterChange = (value: string) => {
+    setIsLoading(true)
+    setSelectedFilter(value)
+    const filteredPieChartData = calculatePieChartData(transactions, filterDate, value)
+    setPieChartData(filteredPieChartData)
+    setIsLoading(false)
   }
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true)
-        const userId = user?.id
+        const userId = user?.id || ''
         const [transactionData, categoryData] = await Promise.all([getTransactionsByUserId(userId), getCategories(userId)])
         if (transactionData) setTransactions(transactionData)
         if (categoryData) setCategories(categoryData)
@@ -72,7 +84,7 @@ const DashboardPage: React.FC = () => {
   }, [refreshData, user])
 
   useEffect(() => {
-    const pieChartData = calculatePieChartData(transactions, filterDate)
+    const pieChartData = calculatePieChartData(transactions, filterDate, selectedFilter)
     setPieChartData(pieChartData)
   }, [transactions, filterDate])
 
@@ -85,10 +97,11 @@ const DashboardPage: React.FC = () => {
     const categoryMap: { [key: string]: number } = {}
 
     transactions.forEach((transaction) => {
-      const categoryId = transaction.category_id
-      const category = categories.find((cat) => cat.category_id === categoryId)
-      const categoryName = category ? category.category_name : 'Other'
-      categoryMap[categoryName] = (categoryMap[categoryName] || 0) + (transaction?.total || 0)
+      const category = categories.find((cat) => cat.category_id === transaction.category_id)
+      if (category && category.transaction_type === 'outcome' && transaction.category_type === 'outcome') {
+        const categoryName = category.category_name || 'Other'
+        categoryMap[categoryName] = (categoryMap[categoryName] || 0) + (transaction.total || 0)
+      }
     })
 
     const sortedCategories = Object.entries(categoryMap).sort((a, b) => b[1] - a[1])
@@ -115,7 +128,11 @@ const DashboardPage: React.FC = () => {
     return Object.entries(monthlySpending).map(([month, total]) => ({ label: month, amount: total }))
   }
 
-  const calculatePieChartData = (transactions: Transaction[], filterDate: DateValueType): { label: string; amount: number }[] => {
+  const calculatePieChartData = (
+    transactions: Transaction[],
+    filterDate: DateValueType,
+    selectedFilter: string,
+  ): { label: string; amount: number }[] => {
     const categoryMap: { [key: string]: number } = {}
 
     const filteredTransactions = transactions.filter((transaction) => {
@@ -123,7 +140,8 @@ const DashboardPage: React.FC = () => {
 
       return (
         transactionDate >= (filterDate?.startDate || new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0]) &&
-        transactionDate <= (filterDate?.endDate || new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0])
+        transactionDate <= (filterDate?.endDate || new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0]) &&
+        (selectedFilter === 'all' || transaction.category_type === selectedFilter)
       )
     })
 
@@ -134,7 +152,10 @@ const DashboardPage: React.FC = () => {
       categoryMap[categoryName] = (categoryMap[categoryName] || 0) + (transaction?.total || 0)
     })
 
-    return Object.entries(categoryMap).map(([categoryName, total]) => ({ label: categoryName, amount: total }))
+    return Object.entries(categoryMap).map(([categoryName, total]) => ({
+      label: categoryName,
+      amount: total,
+    }))
   }
 
   const options: ApexOptions = {
@@ -329,6 +350,13 @@ const DashboardPage: React.FC = () => {
           <Card title="Spending Chart">
             <div className="mb-4 flex justify-between rounded-lg border-2 border-solid border-gray-300">
               <Datepicker useRange value={filterDate} onChange={handleValueChange} />
+            </div>
+            <div className="mb-4">
+              <Select value={selectedFilter} id="filter" label="Filter" onChange={(e) => handleFilterChange(e || '')} className="w-full">
+                <Option value="all">All</Option>
+                <Option value="income">Income</Option>
+                <Option value="outcome">Outcome</Option>
+              </Select>
             </div>
             {isLoading ? (
               <div className="max-w-full animate-pulse">
