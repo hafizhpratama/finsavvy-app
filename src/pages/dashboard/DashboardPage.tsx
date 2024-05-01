@@ -1,17 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import ReactApexChart from 'react-apexcharts'
-import { ApexOptions } from 'apexcharts'
-import { Alert, Avatar, List, ListItem, ListItemPrefix, Option } from '@material-tailwind/react'
-import Balance from '../../components/Balance'
-import Card from '../../components/Card'
-import IndexPage from '../IndexPage'
-import { getTransactionsByUserId, getCategories } from '../../services/supabaseService'
-import { useAuth } from '../../contexts/AuthContext'
-import Datepicker, { DateValueType } from 'react-tailwindcss-datepicker'
-import Typography from '../../components/Typography'
-import Select from '../../components/Select'
 import { BiCheckCircle } from 'react-icons/bi'
-import Error from '../../components/Error'
 import {
   MdAttachMoney,
   MdDirectionsCar,
@@ -23,11 +12,16 @@ import {
   MdShoppingCart,
   MdTheaters,
 } from 'react-icons/md'
-import { IconType } from 'react-icons'
-
-interface CategoryIcons {
-  [key: string]: IconType
-}
+import { Alert, List, ListItem, ListItemPrefix, Option } from '@material-tailwind/react'
+import Balance from '../../components/Balance'
+import Card from '../../components/UI/Card'
+import Datepicker, { DateValueType } from 'react-tailwindcss-datepicker'
+import Select from '../../components/UI/Select'
+import Typography from '../../components/UI/Typography'
+import { getTransactionsByUserId, getCategories } from '../../services/supabaseService'
+import { useAuth } from '../../contexts/AuthContext'
+import IndexPage from '../IndexPage'
+import ErrorBoundary from '../../components/ErrorBoundary'
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuth()
@@ -75,7 +69,7 @@ const DashboardPage: React.FC = () => {
         if (transactionData) setTransactions(transactionData)
         if (categoryData) setCategories(categoryData)
       } catch (error: any) {
-        setError(error)
+        setError(error || 'An error occurred')
       } finally {
         setIsLoading(false)
       }
@@ -86,7 +80,7 @@ const DashboardPage: React.FC = () => {
   useEffect(() => {
     const pieChartData = calculatePieChartData(transactions, filterDate, selectedFilter)
     setPieChartData(pieChartData)
-  }, [transactions, filterDate])
+  }, [transactions, filterDate, selectedFilter])
 
   useEffect(() => {
     const monthlySpendingData = calculateMonthlySpending(transactions, selectedYear)
@@ -158,7 +152,7 @@ const DashboardPage: React.FC = () => {
     }))
   }
 
-  const options: ApexOptions = {
+  const options: ApexCharts.ApexOptions = {
     chart: {
       type: 'bar',
       height: 350,
@@ -201,9 +195,7 @@ const DashboardPage: React.FC = () => {
           fontFamily: 'inherit',
           fontWeight: 400,
         },
-        formatter: function (value) {
-          return 'Rp. ' + value.toLocaleString()
-        },
+        formatter: (value: number) => 'Rp. ' + value.toLocaleString(),
       },
     },
     grid: {
@@ -235,9 +227,7 @@ const DashboardPage: React.FC = () => {
 
   const pieChartColors = ['#4CAF50', '#FFC107', '#2196F3', '#E91E63', '#9C27B0', '#607D8B', '#795548', '#FF5722', '#009688', '#FF9800']
 
-  const getBalance = (inflow: number, outflow: number) => {
-    return inflow - outflow
-  }
+  const getBalance = (inflow: number, outflow: number) => inflow - outflow
 
   const inflowTransactions = transactions.filter(
     (transaction) => transaction.total && transaction.total > 0 && transaction.category_type === 'income',
@@ -246,9 +236,8 @@ const DashboardPage: React.FC = () => {
     (transaction) => transaction.total && transaction.total > 0 && transaction.category_type === 'outcome',
   )
 
-  const getTotalAmount = (transactionList: Transaction[]) => {
-    return transactionList.reduce((total, transaction) => total + (transaction.total || 0), 0)
-  }
+  const getTotalAmount = (transactionList: Transaction[]) =>
+    transactionList.reduce((total, transaction) => total + (transaction.total || 0), 0)
 
   const handleReceiveAlertMessage = (message: string) => {
     setAlertMessage(message)
@@ -258,7 +247,7 @@ const DashboardPage: React.FC = () => {
     }, 5000)
   }
 
-  const categoryIcons: CategoryIcons = {
+  const categoryIcons: Record<string, React.ComponentType<any>> = {
     Salary: MdAttachMoney,
     Interest: MdAttachMoney,
     Investments: MdAttachMoney,
@@ -275,25 +264,23 @@ const DashboardPage: React.FC = () => {
     Rent: MdHome,
   }
 
-  function getCategoryColor(category: string): string {
+  const getCategoryColor = (category: string): string => {
     const hash = category.split('').reduce((acc, char) => char.charCodeAt(0) + acc, 0)
     const hue = hash % 360
     return `hsl(${hue}, 70%, 50%)`
   }
 
   if (error) {
-    return <Error errorCode={500} errorMessage={error} />
+    return <ErrorBoundary errorCode={500} errorMessage={error} />
   }
 
   return (
     <>
       <IndexPage refreshData={handleRefreshData} sendAlertMessage={handleReceiveAlertMessage}>
         {isVisible && (
-          <>
-            <Alert icon={<BiCheckCircle />} className="rounded-none border-l-4 border-[#2ec946] bg-[#2ec946]/10 font-medium text-[#2ec946]">
-              {alertMessage}
-            </Alert>
-          </>
+          <Alert icon={<BiCheckCircle />} className="rounded-none border-l-4 border-[#2ec946] bg-[#2ec946]/10 font-medium text-[#2ec946]">
+            {alertMessage}
+          </Alert>
         )}
 
         <div className="mb-16">
@@ -308,10 +295,7 @@ const DashboardPage: React.FC = () => {
                 value={String(selectedYear)}
                 id="year"
                 label="Year"
-                onChange={(e) => {
-                  const selectedValue = parseInt(e || '')
-                  setSelectedYear(selectedValue)
-                }}
+                onChange={(e) => setSelectedYear(parseInt(e || ''))}
                 className="w-full"
               >
                 {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i).map((year) => (
@@ -323,25 +307,14 @@ const DashboardPage: React.FC = () => {
             </div>
             {isLoading ? (
               <div className="max-w-full animate-pulse">
-                <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
-                  &nbsp;
-                </Typography>
-                <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
-                  &nbsp;
-                </Typography>
-                <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
-                  &nbsp;
-                </Typography>
-                <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
-                  &nbsp;
-                </Typography>
-                <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
-                  &nbsp;
-                </Typography>
+                {[...Array(5)].map((_, index) => (
+                  <Typography key={index} as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
+                    &nbsp;
+                  </Typography>
+                ))}
               </div>
             ) : (
               <div className="w-full">
-                {/* Spending Report */}
                 <ReactApexChart options={options} series={series} type="bar" width="100%" height={350} />
               </div>
             )}
@@ -352,7 +325,7 @@ const DashboardPage: React.FC = () => {
               <Datepicker useRange value={filterDate} onChange={handleValueChange} />
             </div>
             <div className="mb-4">
-              <Select value={selectedFilter} id="filter" label="Filter" onChange={(e) => handleFilterChange(e || '')} className="w-full">
+              <Select value={selectedFilter} id="filter" label="Type" onChange={(e) => handleFilterChange(e || '')} className="w-full">
                 <Option value="all">All</Option>
                 <Option value="income">Income</Option>
                 <Option value="outcome">Outcome</Option>
@@ -360,21 +333,11 @@ const DashboardPage: React.FC = () => {
             </div>
             {isLoading ? (
               <div className="max-w-full animate-pulse">
-                <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
-                  &nbsp;
-                </Typography>
-                <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
-                  &nbsp;
-                </Typography>
-                <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
-                  &nbsp;
-                </Typography>
-                <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
-                  &nbsp;
-                </Typography>
-                <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
-                  &nbsp;
-                </Typography>
+                {[...Array(5)].map((_, index) => (
+                  <Typography key={index} as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
+                    &nbsp;
+                  </Typography>
+                ))}
               </div>
             ) : (
               <div className="flex flex-col items-center">
@@ -399,48 +362,19 @@ const DashboardPage: React.FC = () => {
             <div>
               {isLoading ? (
                 <>
-                  <div className="mb-4 flex animate-pulse items-center gap-8">
-                    {/* Left container */}
-                    <div className="grid h-14 w-14 place-items-center rounded-full bg-gray-300"></div>
-
-                    {/* Right container */}
-                    <div className="w-full">
-                      <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
-                        &nbsp;
-                      </Typography>
-                      <Typography as="div" variant="h1" className="mb-2 h-6 bg-gray-300">
-                        &nbsp;
-                      </Typography>
+                  {[...Array(3)].map((_, index) => (
+                    <div key={index} className="mb-4 flex animate-pulse items-center gap-8">
+                      <div className="grid h-14 w-14 place-items-center rounded-full bg-gray-300"></div>
+                      <div className="w-full">
+                        <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
+                          &nbsp;
+                        </Typography>
+                        <Typography as="div" variant="h1" className="mb-2 h-6 bg-gray-300">
+                          &nbsp;
+                        </Typography>
+                      </div>
                     </div>
-                  </div>
-                  <div className="mb-4 flex animate-pulse items-center gap-8">
-                    {/* Left container */}
-                    <div className="grid h-14 w-14 place-items-center rounded-full bg-gray-300"></div>
-
-                    {/* Right container */}
-                    <div className="w-full">
-                      <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
-                        &nbsp;
-                      </Typography>
-                      <Typography as="div" variant="h1" className="mb-2 h-6 bg-gray-300">
-                        &nbsp;
-                      </Typography>
-                    </div>
-                  </div>
-                  <div className="mb-4 flex animate-pulse items-center gap-8">
-                    {/* Left container */}
-                    <div className="grid h-14 w-14 place-items-center rounded-full bg-gray-300"></div>
-
-                    {/* Right container */}
-                    <div className="w-full">
-                      <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
-                        &nbsp;
-                      </Typography>
-                      <Typography as="div" variant="h1" className="mb-2 h-6 bg-gray-300">
-                        &nbsp;
-                      </Typography>
-                    </div>
-                  </div>
+                  ))}
                 </>
               ) : (
                 // @ts-ignore
@@ -453,7 +387,6 @@ const DashboardPage: React.FC = () => {
                       <ListItem key={index}>
                         {/* @ts-ignore */}
                         <ListItemPrefix>
-                          {/* Use Tailwind CSS classes to style the icon */}
                           <IconComponent className="text-3xl" style={{ color: iconColor }} />
                         </ListItemPrefix>
                         <div>

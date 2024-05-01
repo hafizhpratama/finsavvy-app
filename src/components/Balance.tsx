@@ -1,7 +1,7 @@
 import React from 'react'
 import { FaDollarSign } from 'react-icons/fa'
-import Card from './Card'
-import Typography from './Typography'
+import Card from './UI/Card'
+import Typography from './UI/Typography'
 
 interface BalanceProps {
   balance: number

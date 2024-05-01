@@ -1,11 +1,11 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import './App.css'
 import { AuthProvider } from './contexts/AuthContext'
-import ProtectedRoute from './components/ProtectedRoute'
+import ProtectedRoute from './utils/ProtectedRoute'
 import DashboardPage from './pages/dashboard/DashboardPage'
 import LoginPage from './pages/login/index/LoginPage'
 import TransactionPage from './pages/transaction/index/TransactionPage'
-import Error from './components/Error'
+import ErrorBoundary from './components/ErrorBoundary'
 
 function App() {
   return (
@@ -30,7 +30,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            <Route path="*" element={<Error errorCode={404} errorMessage="Oops! It looks like this page doesn't exist." />} />
+            <Route path="*" element={<ErrorBoundary errorCode={404} errorMessage="Oops! It looks like this page doesn't exist." />} />
           </Routes>
         </div>
       </AuthProvider>

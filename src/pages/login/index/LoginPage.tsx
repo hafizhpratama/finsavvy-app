@@ -20,17 +20,18 @@ const LoginPage: React.FC = () => {
   useRedirectToDashboard(session)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const fetchSession = async () => {
+      const { data: sessionData } = await supabase.auth.getSession()
+      setSession(sessionData?.session ?? null)
+    }
+
+    fetchSession()
+
+    const authListener = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
     })
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-    })
-
-    return () => subscription.unsubscribe()
+    return () => authListener.data.subscription.unsubscribe()
   }, [])
 
   return (

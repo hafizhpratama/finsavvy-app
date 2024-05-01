@@ -1,9 +1,9 @@
 import React, { ReactNode, useState } from 'react'
 import { FaHome, FaDollarSign, FaPlus } from 'react-icons/fa'
 import { Link, useLocation } from 'react-router-dom'
-import AddTransactionModal from '../components/Modal/AddTransactionModal'
+import AddTransactionModal from '../components/UI/Modal/AddTransactionModal'
 import { useAuth } from '../contexts/AuthContext'
-import Error from '../components/Error'
+import ErrorBoundary from '../components/ErrorBoundary'
 
 interface IndexPageProps {
   children: ReactNode
@@ -13,8 +13,8 @@ interface IndexPageProps {
 
 const IndexPage: React.FC<IndexPageProps> = ({ children, refreshData, sendAlertMessage }) => {
   const location = useLocation()
-  const [showModal, setShowModal] = useState(false)
-  const [showOptions, setShowOptions] = useState(false)
+  const [showModal, setShowModal] = useState<boolean>(false)
+  const [showOptions, setShowOptions] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
   const { signOut, user } = useAuth()
 
@@ -30,11 +30,7 @@ const IndexPage: React.FC<IndexPageProps> = ({ children, refreshData, sendAlertM
     }
   }
 
-  if (error) {
-    return <Error errorCode={500} errorMessage={error} />
-  }
-
-  const getInitials = (name: string) => {
+  const getInitials = (name: string): string => {
     const names = name.split(' ')
     return names
       .map((n) => n[0])
@@ -42,9 +38,12 @@ const IndexPage: React.FC<IndexPageProps> = ({ children, refreshData, sendAlertM
       .toUpperCase()
   }
 
+  if (error) {
+    return <ErrorBoundary errorCode={500} errorMessage={error} />
+  }
+
   return (
     <div>
-      {/* Profile Photo */}
       <div className="mb-2 mr-4 flex justify-end">
         <div className="relative">
           <div onClick={toggleOptions} className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-green-500">
@@ -68,7 +67,6 @@ const IndexPage: React.FC<IndexPageProps> = ({ children, refreshData, sendAlertM
 
       {children}
 
-      {/* Bottom Bar */}
       <div className="fixed bottom-4 left-1/2 z-50 h-16 w-11/12 max-w-lg -translate-x-1/2 rounded-full border border-gray-200 bg-white dark:border-gray-600 dark:bg-gray-700">
         <div className="mx-auto grid h-full max-w-lg grid-cols-3">
           <Link

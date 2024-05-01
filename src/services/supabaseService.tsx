@@ -62,7 +62,6 @@ export async function getCategories(userId?: string, type?: string): Promise<Cat
 
     return data ?? null
   } catch (error: any) {
-    console.error('Error fetching categories:', error.message)
     return null
   }
 }

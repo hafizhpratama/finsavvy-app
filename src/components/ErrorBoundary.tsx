@@ -1,15 +1,15 @@
 import React from 'react'
 import { LuRadioTower } from 'react-icons/lu'
-import Typography from './Typography'
-import Button from './Button'
+import Typography from './UI/Typography'
+import Button from './UI/Button'
 import { Link } from 'react-router-dom'
 
-interface ErrorProps {
+interface ErrorBoundaryProps {
   errorCode: number
   errorMessage: string
 }
 
-const Error: React.FC<ErrorProps> = ({ errorCode, errorMessage }) => {
+const ErrorBoundary: React.FC<ErrorBoundaryProps> = ({ errorCode, errorMessage }) => {
   return (
     <div className="flex h-screen flex-col items-center justify-center px-8 text-center">
       <LuRadioTower className="mx-auto h-20 w-20" />
@@ -28,4 +28,4 @@ const Error: React.FC<ErrorProps> = ({ errorCode, errorMessage }) => {
   )
 }
 
-export default Error
+export default ErrorBoundary

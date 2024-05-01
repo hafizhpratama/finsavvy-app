@@ -1,42 +1,51 @@
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { Session, User } from '@supabase/supabase-js'
-import { useContext, useState, useEffect, createContext } from 'react'
 import { supabase } from '../utils/supabase'
+import ErrorBoundary from '../components/ErrorBoundary'
 
-// create a context for authentication
-const AuthContext = createContext<{
-  session: Session | null | undefined
-  user: User | null | undefined
+interface AuthContextType {
+  session: Session | null
+  user: User | null
   signOut: () => Promise<void>
-}>({
+}
+
+const initialAuthContext: AuthContextType = {
   session: null,
   user: null,
   signOut: async () => {},
-})
+}
 
-export const AuthProvider = ({ children }: any) => {
-  const [user, setUser] = useState<User>()
-  const [session, setSession] = useState<Session | null>()
+const AuthContext = createContext<AuthContextType>(initialAuthContext)
+
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null)
+  const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const setData = async () => {
-      const {
-        data: { session },
-        error,
-      } = await supabase.auth.getSession()
-      if (error) throw error
-      setSession(session)
-      setUser(session?.user)
-      setLoading(false)
+    const fetchSession = async () => {
+      try {
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession()
+        if (error) throw error
+        setSession(session)
+        setUser(session?.user ?? null)
+      } catch (error: any) {
+        setError(error)
+      } finally {
+        setLoading(false)
+      }
     }
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-      setUser(session?.user)
-      setLoading(false)
+      setSession(session || null)
+      setUser(session?.user ?? null)
     })
 
-    setData()
+    fetchSession()
 
     return () => {
       listener?.subscription.unsubscribe()
@@ -47,21 +56,23 @@ export const AuthProvider = ({ children }: any) => {
     try {
       await supabase.auth.signOut()
     } catch (error: any) {
-      console.error('Error signing out:', error.message)
+      setError(error)
     }
   }
 
-  const value = {
+  const authContextValue: AuthContextType = {
     session,
     user,
     signOut,
   }
 
-  // use a provider to pass down the value
-  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>
+  if (error) {
+    return <ErrorBoundary errorCode={500} errorMessage={error} />
+  }
+
+  return <AuthContext.Provider value={authContextValue}>{!loading && children}</AuthContext.Provider>
 }
 
-// export the useAuth hook
-export const useAuth = () => {
+export const useAuth = (): AuthContextType => {
   return useContext(AuthContext)
 }
