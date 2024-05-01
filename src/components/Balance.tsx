@@ -21,7 +21,7 @@ const Balance: React.FC<BalanceProps> = ({ balance, loading }) => {
         ) : (
           <div className="flex items-center">
             <FaDollarSign size={20} className="mr-2 text-yellow-600" />
-            <Typography variant="paragraph" color={balance >= 0 ? 'green' : 'red'} className="font-semibold">
+            <Typography variant="paragraph" style={{ color: balance >= 0 ? '#1B9C85' : '#FE0000' }} className="font-semibold">
               Rp. {balance.toLocaleString()}
             </Typography>
           </div>

@@ -46,7 +46,11 @@ const IndexPage: React.FC<IndexPageProps> = ({ children, refreshData, sendAlertM
     <div>
       <div className="mb-2 mr-4 flex justify-end">
         <div className="relative">
-          <div onClick={toggleOptions} className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-green-500">
+          <div
+            style={{ backgroundColor: '#15F5BA' }}
+            onClick={toggleOptions}
+            className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full"
+          >
             <span className="text-lg text-white">{getInitials(user?.email || '')}</span>
           </div>
           {showOptions && (

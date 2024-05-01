@@ -35,7 +35,7 @@ const DashboardPage: React.FC = () => {
   const [alertMessage, setAlertMessage] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
   const [monthlySpendingData, setMonthlySpendingData] = useState<{ label: string; amount: number }[]>([])
-  const [pieChartData, setPieChartData] = useState<{ label: string; amount: number }[]>([])
+  const [pieChartData, setPieChartData] = useState<{ label: string; amount: number; color: string }[]>([])
   const [selectedFilter, setSelectedFilter] = useState<string>('all')
   const [filterDate, setFilterDate] = useState<DateValueType>({
     startDate: today.toISOString().split('T')[0],
@@ -126,7 +126,7 @@ const DashboardPage: React.FC = () => {
     transactions: Transaction[],
     filterDate: DateValueType,
     selectedFilter: string,
-  ): { label: string; amount: number }[] => {
+  ): { label: string; amount: number; color: string }[] => {
     const categoryMap: { [key: string]: number } = {}
 
     const filteredTransactions = transactions.filter((transaction) => {
@@ -142,13 +142,41 @@ const DashboardPage: React.FC = () => {
     filteredTransactions.forEach((transaction) => {
       const categoryId = transaction.category_id
       const category = categories.find((cat) => cat.category_id === categoryId)
-      const categoryName = category ? category.category_name : 'Other'
+      let categoryName = category ? category.category_name : 'Other'
+
+      if (transaction.category_type === 'income' && categoryName === 'Other') {
+        categoryName = 'Income Other'
+      } else if (transaction.category_type === 'outcome' && categoryName === 'Other') {
+        categoryName = 'Outcome Other'
+      }
+
       categoryMap[categoryName] = (categoryMap[categoryName] || 0) + (transaction?.total || 0)
     })
+
+    const categoryColors: { [key: string]: string } = {
+      // Income categories
+      Salary: '#15F5BA',
+      Interest: '#98A8F8',
+      Investments: '#6F38C5',
+      Gifts: '#068FFF',
+      'Income Other': '#3A98B9',
+      // Outcome categories
+      Utilities: '#CF0A0A',
+      Groceries: '#ADDDD0',
+      Transportation: '#FFDE00',
+      Dining: '#F73D93',
+      Entertainment: '#EA906C',
+      Healthcare: '#5F264A',
+      Education: '#FF6000',
+      Insurance: '#FF597B',
+      'Outcome Other': '#E55604',
+      Rent: '#F273E6',
+    }
 
     return Object.entries(categoryMap).map(([categoryName, total]) => ({
       label: categoryName,
       amount: total,
+      color: categoryColors[categoryName] || '#F0F3FF',
     }))
   }
 
@@ -225,8 +253,6 @@ const DashboardPage: React.FC = () => {
     },
   ]
 
-  const pieChartColors = ['#4CAF50', '#FFC107', '#2196F3', '#E91E63', '#9C27B0', '#607D8B', '#795548', '#FF5722', '#009688', '#FF9800']
-
   const getBalance = (inflow: number, outflow: number) => inflow - outflow
 
   const inflowTransactions = transactions.filter(
@@ -265,9 +291,30 @@ const DashboardPage: React.FC = () => {
   }
 
   const getCategoryColor = (category: string): string => {
-    const hash = category.split('').reduce((acc, char) => char.charCodeAt(0) + acc, 0)
-    const hue = hash % 360
-    return `hsl(${hue}, 70%, 50%)`
+    switch (category) {
+      case 'Utilities':
+        return '#CF0A0A'
+      case 'Groceries':
+        return '#ADDDD0'
+      case 'Transportation':
+        return '#FFDE00'
+      case 'Dining':
+        return '#F73D93'
+      case 'Entertainment':
+        return '#EA906C'
+      case 'Healthcare':
+        return '#5F264A'
+      case 'Education':
+        return '#FF6000'
+      case 'Insurance':
+        return '#FF597B'
+      case 'Other':
+        return '#E55604'
+      case 'Rent':
+        return '#F273E6'
+      default:
+        return '#F0F3FF'
+    }
   }
 
   if (error) {
@@ -344,7 +391,7 @@ const DashboardPage: React.FC = () => {
                 {pieChartData.length > 0 ? (
                   <div className="mb-4 w-full">
                     <ReactApexChart
-                      options={{ ...options, colors: pieChartColors, legend: { position: 'bottom' } }}
+                      options={{ ...options, colors: pieChartData.map((item) => item.color), legend: { position: 'bottom' } }}
                       series={pieChartData.map((item) => item.amount)}
                       type="pie"
                       width="100%"

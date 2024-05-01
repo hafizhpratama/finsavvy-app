@@ -1,11 +1,17 @@
 import { Select as MaterialSelect, SelectProps } from '@material-tailwind/react'
 import React from 'react'
 
-const Select: React.FC<SelectProps> = (props) => {
-  const { children, ...rest } = props
+interface CustomSelectProps extends SelectProps {
+  style?: React.CSSProperties
+}
 
-  // @ts-ignore
-  return <MaterialSelect {...rest}>{children}</MaterialSelect>
+const Select: React.FC<CustomSelectProps> = ({ children, style, ...rest }) => {
+  return (
+    // @ts-ignore
+    <MaterialSelect style={style} {...rest}>
+      {children}
+    </MaterialSelect>
+  )
 }
 
 export default Select

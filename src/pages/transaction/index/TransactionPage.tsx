@@ -149,7 +149,7 @@ const TransactionPage: React.FC = () => {
                   &nbsp;
                 </Typography>
               ) : (
-                <Typography variant="paragraph" color="green" className="font-semibold">
+                <Typography style={{ color: '#1B9C85' }} variant="paragraph" className="font-semibold">
                   Rp. {getTotalAmount(inflowTransactions).toLocaleString()}
                 </Typography>
               )}
@@ -161,7 +161,7 @@ const TransactionPage: React.FC = () => {
                   &nbsp;
                 </Typography>
               ) : (
-                <Typography variant="paragraph" color="red" className="font-semibold">
+                <Typography style={{ color: '#FE0000' }} variant="paragraph" className="font-semibold">
                   Rp. {Math.abs(getTotalAmount(outflowTransactions)).toLocaleString()}
                 </Typography>
               )}
