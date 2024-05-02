@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Option, Textarea } from '@material-tailwind/react'
 import { useAuth } from '../../../contexts/AuthContext'
 import { addTransaction, getCategories } from '../../../services/supabaseService'
@@ -34,7 +34,7 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ closeModal, r
 
   const handleSave = async () => {
     const data: Transaction = {
-      total: parseInt(total),
+      total: parseInt(total.replace(/,/g, ''), 10),
       category_id: parseInt(category),
       notes,
       date,
@@ -50,6 +50,10 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ closeModal, r
     }
   }
 
+  const formatTotal = (value: string) => {
+    return value.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  }
+
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm">
       <div className="relative w-5/6 rounded-2xl bg-white">
@@ -60,12 +64,12 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ closeModal, r
           <div className="py-6">
             <div className="flex flex-col gap-6">
               <Input
-                type="number"
+                type="text"
                 variant="outlined"
                 label="Total Transaction"
-                value={total}
+                value={formatTotal(total)}
                 onChange={(e) => {
-                  setTotal(e.target.value)
+                  setTotal(formatTotal(e.target.value))
                 }}
               />
 
