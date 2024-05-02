@@ -11,7 +11,7 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <div className="inset-0 bg-gray-100 p-4">
+        <div className="inset-0 bg-gray-100 py-4">
           <Routes>
             <Route
               path="/"

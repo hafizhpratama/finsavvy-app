@@ -35,7 +35,7 @@ const DashboardPage: React.FC = () => {
   const [alertMessage, setAlertMessage] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
   const [monthlySpendingData, setMonthlySpendingData] = useState<{ label: string; amount: number }[]>([])
-  const [pieChartData, setPieChartData] = useState<{ label: string; amount: number; color: string }[]>([])
+  const [pieChartData, setPieChartData] = useState<{ label: string; amount: number; color: string; percentage: number }[]>([])
   const [selectedFilter, setSelectedFilter] = useState<string>('all')
   const [filterDate, setFilterDate] = useState<DateValueType>({
     startDate: today.toISOString().split('T')[0],
@@ -87,20 +87,40 @@ const DashboardPage: React.FC = () => {
     setMonthlySpendingData(monthlySpendingData)
   }, [transactions, selectedYear])
 
-  const calculateTopSpending = (transactions: Transaction[], categories: Category[]): { title: string; amount: number }[] => {
+  const calculateTopSpending = (
+    transactions: Transaction[],
+    categories: Category[],
+    filterDate: DateValueType,
+  ): { title: string; amount: number; percentage: number }[] => {
     const categoryMap: { [key: string]: number } = {}
 
-    transactions.forEach((transaction) => {
+    const filteredTransactions = transactions.filter((transaction) => {
+      const transactionDate = new Date(transaction.date || '').toISOString().split('T')[0]
+      const today = new Date()
+      return (
+        transactionDate >= (filterDate?.startDate || new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0]) &&
+        transactionDate <= (filterDate?.endDate || new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0])
+      )
+    })
+
+    let totalSpending = 0
+    filteredTransactions.forEach((transaction) => {
       const category = categories.find((cat) => cat.category_id === transaction.category_id)
-      if (category && category.transaction_type === 'outcome' && transaction.category_type === 'outcome') {
+      if (category && transaction.category_type === 'outcome') {
+        totalSpending += transaction.total || 0
         const categoryName = category.category_name || 'Other'
         categoryMap[categoryName] = (categoryMap[categoryName] || 0) + (transaction.total || 0)
       }
     })
 
     const sortedCategories = Object.entries(categoryMap).sort((a, b) => b[1] - a[1])
+    const result = sortedCategories.map(([categoryName, total]) => ({
+      title: categoryName,
+      amount: total,
+      percentage: (total / totalSpending) * 100,
+    }))
 
-    return sortedCategories.slice(0, 5).map(([categoryName, total]) => ({ title: categoryName, amount: total }))
+    return result
   }
 
   const calculateMonthlySpending = (transactions: Transaction[], selectedYear: number): { label: string; amount: number }[] => {
@@ -112,7 +132,10 @@ const DashboardPage: React.FC = () => {
       const month = new Date(selectedYear, i, 1)
       const nextMonth = new Date(selectedYear, i + 1, 1)
       const monthTransactions = transactions.filter(
-        (transaction) => new Date(transaction.date || '') >= month && new Date(transaction.date || '') < nextMonth,
+        (transaction) =>
+          new Date(transaction.date || '') >= month &&
+          new Date(transaction.date || '') < nextMonth &&
+          transaction.category_type === 'outcome',
       )
       const monthTotal = monthTransactions.reduce((total, transaction) => total + (transaction?.total || 0), 0)
 
@@ -126,12 +149,12 @@ const DashboardPage: React.FC = () => {
     transactions: Transaction[],
     filterDate: DateValueType,
     selectedFilter: string,
-  ): { label: string; amount: number; color: string }[] => {
+  ): { label: string; amount: number; percentage: number; color: string }[] => {
     const categoryMap: { [key: string]: number } = {}
+    let totalAllCategories = 0
 
     const filteredTransactions = transactions.filter((transaction) => {
       const transactionDate = new Date(transaction.date || '').toISOString().split('T')[0]
-
       return (
         transactionDate >= (filterDate?.startDate || new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0]) &&
         transactionDate <= (filterDate?.endDate || new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0]) &&
@@ -151,6 +174,7 @@ const DashboardPage: React.FC = () => {
       }
 
       categoryMap[categoryName] = (categoryMap[categoryName] || 0) + (transaction?.total || 0)
+      totalAllCategories += transaction.total || 0
     })
 
     const categoryColors: { [key: string]: string } = {
@@ -176,6 +200,7 @@ const DashboardPage: React.FC = () => {
     return Object.entries(categoryMap).map(([categoryName, total]) => ({
       label: categoryName,
       amount: total,
+      percentage: (total / totalAllCategories) * 100,
       color: categoryColors[categoryName] || '#F0F3FF',
     }))
   }
@@ -223,7 +248,7 @@ const DashboardPage: React.FC = () => {
           fontFamily: 'inherit',
           fontWeight: 400,
         },
-        formatter: (value: number) => 'Rp. ' + value.toLocaleString(),
+        formatter: (value: number) => value.toFixed(1) + ' %',
       },
     },
     grid: {
@@ -252,18 +277,6 @@ const DashboardPage: React.FC = () => {
       data: monthlySpendingData.map((item) => item.amount),
     },
   ]
-
-  const getBalance = (inflow: number, outflow: number) => inflow - outflow
-
-  const inflowTransactions = transactions.filter(
-    (transaction) => transaction.total && transaction.total > 0 && transaction.category_type === 'income',
-  )
-  const outflowTransactions = transactions.filter(
-    (transaction) => transaction.total && transaction.total > 0 && transaction.category_type === 'outcome',
-  )
-
-  const getTotalAmount = (transactionList: Transaction[]) =>
-    transactionList.reduce((total, transaction) => total + (transaction.total || 0), 0)
 
   const handleReceiveAlertMessage = (message: string) => {
     setAlertMessage(message)
@@ -331,10 +344,7 @@ const DashboardPage: React.FC = () => {
         )}
 
         <div className="mb-16">
-          <Balance
-            balance={getBalance(getTotalAmount(inflowTransactions), Math.abs(getTotalAmount(outflowTransactions)))}
-            loading={isLoading}
-          />
+          <Balance refreshData={handleRefreshData} />
 
           <Card title="Spending Report">
             <div className="mb-4">
@@ -392,14 +402,14 @@ const DashboardPage: React.FC = () => {
                   <div className="mb-4 w-full">
                     <ReactApexChart
                       options={{ ...options, colors: pieChartData.map((item) => item.color), legend: { position: 'bottom' } }}
-                      series={pieChartData.map((item) => item.amount)}
+                      series={pieChartData.map((item) => item.percentage)}
                       type="pie"
                       width="100%"
                       height={350}
                     />
                   </div>
                 ) : (
-                  <p className="py-16">No data available today.</p>
+                  <span className="py-16 text-sm font-normal text-gray-500">No data available today.</span>
                 )}
               </div>
             )}
@@ -426,27 +436,30 @@ const DashboardPage: React.FC = () => {
               ) : (
                 // @ts-ignore
                 <List>
-                  {calculateTopSpending(transactions, categories).map((item, index) => {
-                    const IconComponent = categoryIcons[item.title]
-                    const iconColor = getCategoryColor(item.title)
-                    return (
-                      // @ts-ignore
-                      <ListItem key={index}>
-                        {/* @ts-ignore */}
-                        <ListItemPrefix>
-                          <IconComponent className="text-3xl" style={{ color: iconColor }} />
-                        </ListItemPrefix>
-                        <div>
-                          <Typography variant="h6" color="blue-gray">
-                            {item.title}
-                          </Typography>
-                          <Typography variant="small" color="gray" className="font-normal">
-                            Rp. {item.amount.toLocaleString()}
-                          </Typography>
-                        </div>
-                      </ListItem>
-                    )
-                  })}
+                  {calculateTopSpending(transactions, categories, filterDate).length > 0 ? (
+                    calculateTopSpending(transactions, categories, filterDate).map((item, index) => {
+                      const IconComponent = categoryIcons[item.title]
+                      const iconColor = getCategoryColor(item.title)
+                      return (
+                        // @ts-ignore
+                        <ListItem key={index} className="flex items-center">
+                          {/* @ts-ignore */}
+                          <ListItemPrefix>
+                            <IconComponent className="text-3xl" style={{ color: iconColor }} />
+                          </ListItemPrefix>
+                          <div className="ml-2 flex flex-col">
+                            <Typography className="text-sm font-semibold text-black">{item.title}</Typography>
+                            <Typography className="text-xs font-normal text-gray-500">Rp. {item.amount.toLocaleString()}</Typography>
+                          </div>
+                          <div className="ml-auto">
+                            <Typography className="text-xs font-semibold text-black">{item.percentage.toFixed(1)} %</Typography>
+                          </div>
+                        </ListItem>
+                      )
+                    })
+                  ) : (
+                    <span className="py-16 text-center text-sm font-normal text-gray-500">No data available today.</span>
+                  )}
                 </List>
               )}
             </div>

@@ -52,11 +52,9 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ closeModal, r
 
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm">
-      <div className="relative w-2/3 max-w-lg rounded-2xl bg-white">
+      <div className="relative w-5/6 rounded-2xl bg-white">
         <div className="rounded-t-2xl border-b border-gray-200 px-6 py-4">
-          <Typography variant="h6" color="black" className="font-semibold">
-            Add Transaction
-          </Typography>
+          <Typography className="text-sm font-semibold text-black">Add Transaction</Typography>
         </div>
         <div className="px-6">
           <div className="py-6">

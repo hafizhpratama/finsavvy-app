@@ -1,3 +1,4 @@
+import { DateValueType } from 'react-tailwindcss-datepicker'
 import { supabase } from '../utils/supabase'
 import { User } from '@supabase/supabase-js'
 
@@ -15,17 +16,12 @@ export async function addTransaction(data: Transaction, user: User | null | unde
   }
 }
 
-export async function getTransactionsByUserId(userId: string, month?: number, year?: number): Promise<Transaction[] | null> {
+export async function getTransactionsByUserId(userId: string, filterDate?: DateValueType): Promise<Transaction[] | null> {
   try {
     let query = supabase.from('transaction').select('*').eq('user_id', userId)
 
-    if (month !== undefined && year !== undefined) {
-      const currentMonth = month
-      const currentYear = year
-
-      query = query
-        .gte('date', `${currentYear}-${currentMonth.toString().padStart(2, '0')}-01T00:00:00.000Z`)
-        .lt('date', `${currentYear}-${(currentMonth + 1).toString().padStart(2, '0')}-01T00:00:00.000Z`)
+    if (filterDate) {
+      query = query.gte('date', filterDate.startDate).lte('date', filterDate.endDate)
     }
 
     const { data, error } = await query

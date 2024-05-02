@@ -1,31 +1,33 @@
 import React, { useState, useEffect } from 'react'
-import { Option } from '@material-tailwind/react'
 import { useAuth } from '../../../contexts/AuthContext'
 import { getTransactionsByUserId } from '../../../services/supabaseService'
 import Balance from '../../../components/Balance'
 import Card from '../../../components/UI/Card'
 import IndexPage from '../../IndexPage'
 import Typography from '../../../components/UI/Typography'
-import Select from '../../../components/UI/Select'
 import ErrorBoundary from '../../../components/ErrorBoundary'
+import Datepicker, { DateValueType } from 'react-tailwindcss-datepicker'
 
 const TransactionPage: React.FC = () => {
+  const { user } = useAuth()
+  const today = new Date()
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1)
-  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear())
   const [refreshData, setRefreshData] = useState<boolean>(false)
   const [alertMessage, setAlertMessage] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
   const [isVisible, setIsVisible] = useState(false)
-  const { user } = useAuth()
+  const [filterDate, setFilterDate] = useState<DateValueType>({
+    startDate: today.toISOString().split('T')[0],
+    endDate: today.toISOString().split('T')[0],
+  })
 
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true)
       try {
         const userId = user?.id || ''
-        const data = await getTransactionsByUserId(userId, selectedMonth, selectedYear)
+        const data = await getTransactionsByUserId(userId, filterDate)
         setTransactions(data ?? [])
       } catch (error: any) {
         setTransactions([])
@@ -36,7 +38,7 @@ const TransactionPage: React.FC = () => {
     }
 
     fetchData()
-  }, [selectedMonth, selectedYear, refreshData])
+  }, [filterDate, refreshData])
 
   const inflowTransactions = transactions.filter(
     (transaction) => transaction.total && transaction.total > 0 && transaction.category_type === 'income',
@@ -59,8 +61,6 @@ const TransactionPage: React.FC = () => {
     return date.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })
   }
 
-  const getBalance = (inflow: number, outflow: number) => inflow - outflow
-
   const handleRefreshData = () => setRefreshData((prevState) => !prevState)
 
   const handleReceiveAlertMessage = (message: string) => {
@@ -69,6 +69,10 @@ const TransactionPage: React.FC = () => {
     setTimeout(() => {
       setIsVisible(false)
     }, 5000)
+  }
+
+  const handleValueChange = (value: DateValueType) => {
+    setFilterDate(value)
   }
 
   const handleAlertClose = () => setIsVisible(false)
@@ -106,62 +110,34 @@ const TransactionPage: React.FC = () => {
         </div>
       )}
       <div className="mb-16">
-        <Balance
-          balance={getBalance(getTotalAmount(inflowTransactions), Math.abs(getTotalAmount(outflowTransactions)))}
-          loading={isLoading}
-        />
+        <Balance refreshData={handleRefreshData} />
         <Card title="Filter">
-          <div className="flex w-full flex-col gap-4 sm:flex-row">
-            <Select
-              value={String(selectedMonth)}
-              id="month"
-              label="Month"
-              onChange={(e) => setSelectedMonth(parseInt(e || ''))}
-              className="w-full"
-            >
-              {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
-                <Option key={month} value={String(month)}>
-                  {month}
-                </Option>
-              ))}
-            </Select>
-            <Select
-              value={String(selectedYear)}
-              id="year"
-              label="Year"
-              onChange={(e) => setSelectedYear(parseInt(e || ''))}
-              className="w-full"
-            >
-              {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i).map((year) => (
-                <Option key={year} value={String(year)}>
-                  {year}
-                </Option>
-              ))}
-            </Select>
+          <div className="mb-4 flex justify-between rounded-lg border-2 border-solid border-gray-300">
+            <Datepicker useRange value={filterDate} onChange={handleValueChange} />
           </div>
         </Card>
         <Card title="Flow">
           <div className="grid grid-cols-2 items-center">
             <div>
-              <Typography variant="h6">Inflow Total</Typography>
+              <Typography className="text-sm font-semibold text-black">Inflow Total</Typography>
               {isLoading ? (
                 <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
                   &nbsp;
                 </Typography>
               ) : (
-                <Typography style={{ color: '#1B9C85' }} variant="paragraph" className="font-semibold">
+                <Typography style={{ color: '#1B9C85' }} className="text-sm font-semibold">
                   Rp. {getTotalAmount(inflowTransactions).toLocaleString()}
                 </Typography>
               )}
             </div>
             <div>
-              <Typography variant="h6">Outflow Total</Typography>
+              <Typography className="text-sm font-semibold text-black">Outflow Total</Typography>
               {isLoading ? (
                 <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
                   &nbsp;
                 </Typography>
               ) : (
-                <Typography style={{ color: '#FE0000' }} variant="paragraph" className="font-semibold">
+                <Typography style={{ color: '#FE0000' }} className="text-sm font-semibold">
                   Rp. {Math.abs(getTotalAmount(outflowTransactions)).toLocaleString()}
                 </Typography>
               )}
@@ -183,28 +159,28 @@ const TransactionPage: React.FC = () => {
             <>
               {Object.entries(groupedTransactions).length === 0 ? (
                 <div className="text-center">
-                  <Typography variant="paragraph">No transactions found for this period.</Typography>
+                  <span className="py-16 text-sm font-normal text-gray-500">No transactions found for this period.</span>
                 </div>
               ) : (
                 Object.entries(groupedTransactions).map(([date, transactions]) => (
                   <div key={date} className="mb-8 border-b border-gray-200">
-                    <Typography variant="h6" color="indigo">
+                    <Typography className="text-sm font-semibold" color="indigo">
                       {formatDate(date)}
                     </Typography>
                     <div className="divide-y divide-gray-200">
                       {transactions.map((transaction, index) => (
                         <div key={index} className="flex items-center justify-between py-2">
                           <div className="flex-1">
-                            <Typography variant="paragraph">{transaction.notes}</Typography>
+                            <Typography className="text-sm font-normal text-black">{transaction.notes}</Typography>
                           </div>
-                          <Typography variant="paragraph">Rp. {transaction.total?.toLocaleString() ?? '0'}</Typography>
+                          <Typography className="text-sm font-normal text-black">
+                            Rp. {transaction.total?.toLocaleString() ?? '0'}
+                          </Typography>
                         </div>
                       ))}
                       <div className="flex items-center justify-between py-2">
-                        <Typography variant="paragraph" className="font-semibold">
-                          Total
-                        </Typography>
-                        <Typography variant="paragraph" className="font-semibold">
+                        <Typography className="text-sm font-semibold text-black">Total</Typography>
+                        <Typography className="text-sm font-semibold text-black">
                           Rp. {getTotalAmount(transactions).toLocaleString()}
                         </Typography>
                       </div>
