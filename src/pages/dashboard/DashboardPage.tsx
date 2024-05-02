@@ -75,7 +75,7 @@ const DashboardPage: React.FC = () => {
       }
     }
     fetchData()
-  }, [refreshData, user])
+  }, [refreshData])
 
   useEffect(() => {
     const pieChartData = calculatePieChartData(transactions, filterDate, selectedFilter)
@@ -313,7 +313,7 @@ const DashboardPage: React.FC = () => {
         )}
 
         <div className="mb-16">
-          <Balance refreshData={handleRefreshData} />
+          <Balance refreshData={refreshData} />
 
           <Card title="Spending Report">
             <div className="mb-4">

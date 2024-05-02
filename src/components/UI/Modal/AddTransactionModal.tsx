@@ -46,7 +46,7 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ closeModal, r
     if (result.success) {
       closeModal()
       refreshData()
-      sendAlertMessage('Transaction added successfully')
+      sendAlertMessage('Transaction added successfully.')
     }
   }
 

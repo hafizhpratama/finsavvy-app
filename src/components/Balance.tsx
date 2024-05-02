@@ -6,7 +6,7 @@ import { useAuth } from '../contexts/AuthContext'
 import ErrorBoundary from './ErrorBoundary'
 
 interface BalanceProps {
-  refreshData?: () => void
+  refreshData?: boolean
 }
 
 const Balance: React.FC<BalanceProps> = ({ refreshData }) => {
