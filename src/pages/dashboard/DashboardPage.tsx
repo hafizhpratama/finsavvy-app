@@ -205,7 +205,12 @@ const DashboardPage: React.FC = () => {
     }))
   }
 
-  const options: ApexCharts.ApexOptions = {
+  const barChartOptions: ApexCharts.ApexOptions = {
+    dataLabels: {
+      formatter: function () {
+        return ''
+      },
+    },
     chart: {
       type: 'bar',
       height: 350,
@@ -213,70 +218,34 @@ const DashboardPage: React.FC = () => {
         show: false,
       },
     },
-    plotOptions: {
-      bar: {
-        horizontal: false,
-        columnWidth: '55%',
-      },
-    },
     colors: ['#020617'],
-    dataLabels: {
-      enabled: false,
-    },
     xaxis: {
-      axisTicks: {
-        show: false,
-      },
-      axisBorder: {
-        show: false,
-      },
-      labels: {
-        style: {
-          colors: '#616161',
-          fontSize: '12px',
-          fontFamily: 'inherit',
-          fontWeight: 400,
-        },
-      },
-      categories: monthlySpendingData.map((item) => item.label),
+      categories: monthlySpendingData.map(({ label }) => label),
     },
     yaxis: {
       labels: {
-        style: {
-          colors: '#616161',
-          fontSize: '12px',
-          fontFamily: 'inherit',
-          fontWeight: 400,
-        },
-        formatter: (value: number) => value.toFixed(1) + ' %',
-      },
-    },
-    grid: {
-      show: true,
-      borderColor: '#dddddd',
-      strokeDashArray: 5,
-      xaxis: {
-        lines: {
-          show: true,
+        show: true,
+        formatter: function (val) {
+          return formatNumberToK(val)
         },
       },
-      padding: {
-        top: 5,
-        right: 20,
+    },
+  }
+
+  const pieChartOptions: ApexCharts.ApexOptions = {
+    chart: {
+      type: 'pie',
+      height: 350,
+      toolbar: {
+        show: false,
       },
     },
-    labels: pieChartData.map((item) => item.label),
+    colors: pieChartData.map(({ color }) => color),
+    labels: pieChartData.map(({ label }) => label),
     legend: {
       position: 'bottom',
     },
   }
-
-  const series = [
-    {
-      name: 'Spending',
-      data: monthlySpendingData.map((item) => item.amount),
-    },
-  ]
 
   const handleReceiveAlertMessage = (message: string) => {
     setAlertMessage(message)
@@ -372,7 +341,18 @@ const DashboardPage: React.FC = () => {
               </div>
             ) : (
               <div className="w-full">
-                <ReactApexChart options={options} series={series} type="bar" width="100%" height={350} />
+                <ReactApexChart
+                  options={barChartOptions}
+                  series={[
+                    {
+                      name: 'Spending',
+                      data: monthlySpendingData.map((item) => item.amount),
+                    },
+                  ]}
+                  type="bar"
+                  width="100%"
+                  height={350}
+                />
               </div>
             )}
           </Card>
@@ -401,7 +381,7 @@ const DashboardPage: React.FC = () => {
                 {pieChartData.length > 0 ? (
                   <div className="mb-4 w-full">
                     <ReactApexChart
-                      options={{ ...options, colors: pieChartData.map((item) => item.color), legend: { position: 'bottom' } }}
+                      options={{ ...pieChartOptions, colors: pieChartData.map((item) => item.color), legend: { position: 'bottom' } }}
                       series={pieChartData.map((item) => item.percentage)}
                       type="pie"
                       width="100%"
@@ -471,3 +451,13 @@ const DashboardPage: React.FC = () => {
 }
 
 export default DashboardPage
+
+function formatNumberToK(number: number) {
+  if (number >= 1000000) {
+    return (number / 1000000).toFixed(1) + 'M'
+  } else if (number >= 1000) {
+    return (number / 1000).toFixed(1) + 'K'
+  } else {
+    return number.toString()
+  }
+}
