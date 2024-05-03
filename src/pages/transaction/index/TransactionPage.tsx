@@ -158,7 +158,7 @@ const TransactionPage: React.FC = () => {
                       {transactions.map((transaction, index) => (
                         <div
                           key={index}
-                          className="flex items-center justify-between py-2"
+                          className="flex cursor-pointer items-center justify-between py-2"
                           onClick={() => handleTransactionClick(transaction)}
                         >
                           <div className="flex-1">
