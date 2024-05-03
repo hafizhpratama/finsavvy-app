@@ -71,7 +71,7 @@ const IndexPage: React.FC<IndexPageProps> = ({ children, refreshData, sendAlertM
 
       {children}
 
-      <div className="fixed bottom-4 left-1/2 z-50 h-16 w-11/12 max-w-lg -translate-x-1/2 rounded-full border border-gray-200 bg-white dark:border-gray-600 dark:bg-gray-700">
+      <div className="fixed bottom-2 left-1/2 z-50 h-14 w-11/12 max-w-lg -translate-x-1/2 rounded-full border border-gray-200 bg-white dark:border-gray-600 dark:bg-gray-700">
         <div className="mx-auto grid h-full max-w-lg grid-cols-3">
           <Link
             to="/"
