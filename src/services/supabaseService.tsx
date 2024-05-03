@@ -18,7 +18,7 @@ export async function addTransaction(data: Transaction, user: User | null | unde
 
 export async function getTransactionsByUserId(userId: string, filterDate?: DateValueType): Promise<Transaction[] | null> {
   try {
-    let query = supabase.from('transaction').select('*').eq('user_id', userId)
+    let query = supabase.from('transaction').select('*').eq('user_id', userId).is('deleted_at', null)
 
     if (filterDate) {
       query = query.gte('date', filterDate.startDate).lte('date', filterDate.endDate)
@@ -59,5 +59,33 @@ export async function getCategories(userId?: string, type?: string): Promise<Cat
     return data ?? null
   } catch (error: any) {
     return null
+  }
+}
+
+export async function updateTransaction(transactionId: number, newData: Partial<Transaction>, user: User | null | undefined) {
+  try {
+    const { error } = await supabase.from('transaction').update(newData).eq('id', transactionId).eq('user_id', user?.id)
+
+    if (error) {
+      throw error
+    }
+
+    return { success: true }
+  } catch (error: any) {
+    return { success: false, error: error.message }
+  }
+}
+
+export async function deleteTransaction(transactionId: number, user: User | null | undefined) {
+  try {
+    const { error } = await supabase.from('transaction').update({ deleted_at: new Date() }).eq('id', transactionId).eq('user_id', user?.id)
+
+    if (error) {
+      throw error
+    }
+
+    return { success: true }
+  } catch (error: any) {
+    return { success: false, error: error.message }
   }
 }

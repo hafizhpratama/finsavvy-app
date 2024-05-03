@@ -1,4 +1,5 @@
 interface Transaction {
+  id?: number
   total?: number
   category_id?: number
   notes?: string

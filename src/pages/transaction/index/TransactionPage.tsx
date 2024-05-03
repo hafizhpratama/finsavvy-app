@@ -9,6 +9,7 @@ import ErrorBoundary from '../../../components/ErrorBoundary'
 import Datepicker, { DateValueType } from 'react-tailwindcss-datepicker'
 import { Alert } from '@material-tailwind/react'
 import { BiCheckCircle } from 'react-icons/bi'
+import UpdateTransactionModal from '../../../components/UI/Modal/UpdateTransactionModal'
 
 const TransactionPage: React.FC = () => {
   const { user } = useAuth()
@@ -19,6 +20,8 @@ const TransactionPage: React.FC = () => {
   const [alertMessage, setAlertMessage] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
   const [isVisible, setIsVisible] = useState(false)
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction>()
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const [filterDate, setFilterDate] = useState<DateValueType>({
     startDate: today.toISOString().split('T')[0],
     endDate: today.toISOString().split('T')[0],
@@ -75,6 +78,11 @@ const TransactionPage: React.FC = () => {
 
   const handleValueChange = (value: DateValueType) => {
     setFilterDate(value)
+  }
+
+  const handleTransactionClick = (transaction: Transaction) => {
+    setSelectedTransaction(transaction)
+    setIsModalOpen(true)
   }
 
   if (error) {
@@ -148,7 +156,11 @@ const TransactionPage: React.FC = () => {
                     </Typography>
                     <div className="divide-y divide-gray-200">
                       {transactions.map((transaction, index) => (
-                        <div key={index} className="flex items-center justify-between py-2">
+                        <div
+                          key={index}
+                          className="flex items-center justify-between py-2"
+                          onClick={() => handleTransactionClick(transaction)}
+                        >
                           <div className="flex-1">
                             <Typography className="text-sm font-normal text-black">{transaction.notes}</Typography>
                           </div>
@@ -171,6 +183,14 @@ const TransactionPage: React.FC = () => {
           )}
         </Card>
       </div>
+      {isModalOpen && selectedTransaction && (
+        <UpdateTransactionModal
+          sendAlertMessage={handleReceiveAlertMessage}
+          transaction={selectedTransaction}
+          closeModal={() => setIsModalOpen(false)}
+          refreshData={handleRefreshData}
+        />
+      )}
     </IndexPage>
   )
 }
