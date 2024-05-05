@@ -14,7 +14,7 @@
         "type":"image/svg+xml"
       }
     ],
-    "start_url": "finsavvy-tool.vercel.app",
+    "start_url": "/",
     "background_color": "#ffffff",
     "theme_color": "#3367D6",
     "display": "standalone",
