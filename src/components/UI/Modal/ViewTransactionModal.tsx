@@ -38,14 +38,19 @@ const ViewTransactionModal: React.FC<ViewTransactionModalProps> = ({ closeModal,
                 {formatDate(date)}
               </Typography>
               <div>
-                {transactions.map((transaction, index) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <Typography className="text-sm font-normal text-black">{transaction.notes}</Typography>
+                {transactions
+                  .sort((a, b) => {
+                    if (a.total === undefined || b.total === undefined) return 0
+                    return b.total - a.total
+                  })
+                  .map((transaction, index) => (
+                    <div key={index} className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <Typography className="text-sm font-normal text-black">{transaction.notes}</Typography>
+                      </div>
+                      <Typography className="text-sm font-normal text-black">{transaction.total?.toLocaleString() ?? '0'}</Typography>
                     </div>
-                    <Typography className="text-sm font-normal text-black">{transaction.total?.toLocaleString() ?? '0'}</Typography>
-                  </div>
-                ))}
+                  ))}
               </div>
             </div>
           ))}
