@@ -157,20 +157,25 @@ const TransactionsPage: React.FC = () => {
                       {formatDate(date)}
                     </Typography>
                     <div className="divide-y divide-gray-200">
-                      {transactions.map((transaction, index) => (
-                        <div
-                          key={index}
-                          className="flex cursor-pointer items-center justify-between py-2"
-                          onClick={() => handleTransactionClick(transaction)}
-                        >
-                          <div className="flex-1">
-                            <Typography className="text-sm font-normal text-black">{transaction.notes}</Typography>
+                      {transactions
+                        .sort((a, b) => {
+                          if (a.total === undefined || b.total === undefined) return 0
+                          return b.total - a.total
+                        })
+                        .map((transaction, index) => (
+                          <div
+                            key={index}
+                            className="flex cursor-pointer items-center justify-between py-2"
+                            onClick={() => handleTransactionClick(transaction)}
+                          >
+                            <div className="flex-1">
+                              <Typography className="text-sm font-normal text-black">{transaction.notes}</Typography>
+                            </div>
+                            <Typography className="text-sm font-normal text-black">
+                              Rp. {transaction.total?.toLocaleString() ?? '0'}
+                            </Typography>
                           </div>
-                          <Typography className="text-sm font-normal text-black">
-                            Rp. {transaction.total?.toLocaleString() ?? '0'}
-                          </Typography>
-                        </div>
-                      ))}
+                        ))}
                       <div className="flex items-center justify-between py-2">
                         <Typography className="text-sm font-semibold text-black">Total</Typography>
                         <Typography className="text-sm font-semibold text-black">
