@@ -26,6 +26,8 @@ import ErrorBoundary from '../../components/ErrorBoundary'
 const DashboardPage: React.FC = () => {
   const { user } = useAuth()
   const today = new Date()
+  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0)
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [categories, setCategories] = useState<Category[]>([])
@@ -36,10 +38,10 @@ const DashboardPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [monthlySpendingData, setMonthlySpendingData] = useState<{ label: string; amount: number }[]>([])
   const [pieChartData, setPieChartData] = useState<{ label: string; amount: number; color: string; percentage: number }[]>([])
-  const [selectedFilter, setSelectedFilter] = useState<string>('all')
+  const [selectedFilter, setSelectedFilter] = useState<string>('outcome')
   const [filterDate, setFilterDate] = useState<DateValueType>({
-    startDate: today.toISOString().split('T')[0],
-    endDate: today.toISOString().split('T')[0],
+    startDate: startOfMonth.toISOString().split('T')[0],
+    endDate: endOfMonth.toISOString().split('T')[0],
   })
 
   const handleRefreshData = () => setRefreshData((prevState) => !prevState)
@@ -108,7 +110,7 @@ const DashboardPage: React.FC = () => {
       const category = categories.find((cat) => cat.category_id === transaction.category_id)
       if (category && transaction.category_type === 'outcome') {
         totalSpending += transaction.total || 0
-        const categoryName = category.category_name || 'Other'
+        let categoryName = category ? category.category_name : 'Other'
         categoryMap[categoryName] = (categoryMap[categoryName] || 0) + (transaction.total || 0)
       }
     })
@@ -158,7 +160,7 @@ const DashboardPage: React.FC = () => {
       return (
         transactionDate >= (filterDate?.startDate || new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0]) &&
         transactionDate <= (filterDate?.endDate || new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0]) &&
-        (selectedFilter === 'all' || transaction.category_type === selectedFilter)
+        transaction.category_type === selectedFilter
       )
     })
 
@@ -244,6 +246,14 @@ const DashboardPage: React.FC = () => {
     labels: pieChartData.map(({ label }) => label),
     legend: {
       position: 'bottom',
+    },
+    yaxis: {
+      labels: {
+        show: true,
+        formatter: function (val) {
+          return val.toFixed(1)
+        },
+      },
     },
   }
 
@@ -363,7 +373,6 @@ const DashboardPage: React.FC = () => {
             </div>
             <div className="mb-4">
               <Select value={selectedFilter} id="filter" label="Type" onChange={(e) => handleFilterChange(e || '')} className="w-full">
-                <Option value="all">All</Option>
                 <Option value="income">Income</Option>
                 <Option value="outcome">Outcome</Option>
               </Select>
@@ -428,7 +437,10 @@ const DashboardPage: React.FC = () => {
                             <IconComponent className="text-3xl" style={{ color: iconColor }} />
                           </ListItemPrefix>
                           <div className="ml-2 flex flex-col">
-                            <Typography className="text-sm font-semibold text-black">{item.title}</Typography>
+                            <Typography className="text-sm font-semibold text-black">
+                              {item.title === 'Other' ? 'Outcome Other' : item.title}
+                            </Typography>
+
                             <Typography className="text-xs font-normal text-gray-500">Rp. {item.amount.toLocaleString()}</Typography>
                           </div>
                           <div className="ml-auto">

@@ -11,9 +11,11 @@ import { Alert } from '@material-tailwind/react'
 import { BiCheckCircle } from 'react-icons/bi'
 import UpdateTransactionModal from '../../../components/UI/Modal/UpdateTransactionModal'
 
-const TransactionPage: React.FC = () => {
+const TransactionsPage: React.FC = () => {
   const { user } = useAuth()
   const today = new Date()
+  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0)
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [refreshData, setRefreshData] = useState<boolean>(false)
@@ -23,8 +25,8 @@ const TransactionPage: React.FC = () => {
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction>()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [filterDate, setFilterDate] = useState<DateValueType>({
-    startDate: today.toISOString().split('T')[0],
-    endDate: today.toISOString().split('T')[0],
+    startDate: startOfMonth.toISOString().split('T')[0],
+    endDate: endOfMonth.toISOString().split('T')[0],
   })
 
   useEffect(() => {
@@ -195,4 +197,4 @@ const TransactionPage: React.FC = () => {
   )
 }
 
-export default TransactionPage
+export default TransactionsPage

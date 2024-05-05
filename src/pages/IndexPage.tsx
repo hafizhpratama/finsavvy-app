@@ -90,8 +90,8 @@ const IndexPage: React.FC<IndexPageProps> = ({ children, refreshData, sendAlertM
             </button>
           </div>
           <Link
-            to="/transaction"
-            className={`group inline-flex flex-col items-center justify-center rounded-e-full px-5 ${location.pathname === '/transaction' ? 'bg-blue-50' : 'bg-white hover:bg-gray-50'}`}
+            to="/transactions"
+            className={`group inline-flex flex-col items-center justify-center rounded-e-full px-5 ${location.pathname === '/transactions' ? 'bg-blue-50' : 'bg-white hover:bg-gray-50'}`}
           >
             <FaDollarSign size={24} className="text-gray-400" />
           </Link>

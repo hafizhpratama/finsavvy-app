@@ -4,8 +4,8 @@ import { AuthProvider } from './contexts/AuthContext'
 import ProtectedRoute from './utils/ProtectedRoute'
 import DashboardPage from './pages/dashboard/DashboardPage'
 import LoginPage from './pages/login/index/LoginPage'
-import TransactionPage from './pages/transaction/index/TransactionPage'
 import ErrorBoundary from './components/ErrorBoundary'
+import TransactionsPage from './pages/transactions/index/TransactionsPage'
 
 const router = createBrowserRouter([
   {
@@ -21,10 +21,10 @@ const router = createBrowserRouter([
     element: <LoginPage />,
   },
   {
-    path: '/transaction',
+    path: '/transactions',
     element: (
       <ProtectedRoute>
-        <TransactionPage />
+        <TransactionsPage />
       </ProtectedRoute>
     ),
   },
