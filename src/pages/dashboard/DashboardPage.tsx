@@ -134,6 +134,8 @@ const DashboardPage: React.FC = () => {
       percentage: (totalSpent / totalSpending) * 100,
     }))
 
+    result.sort((a, b) => b.amount - a.amount)
+
     return result
   }
 

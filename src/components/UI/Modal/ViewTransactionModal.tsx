@@ -31,7 +31,7 @@ const ViewTransactionModal: React.FC<ViewTransactionModalProps> = ({ closeModal,
             </svg>
           </button>
         </div>
-        <div className="px-4 py-6">
+        <div className="max-h-[calc(100vh-100px)] overflow-y-auto px-4 py-6">
           {Object.entries(groupedTransactions).map(([date, transactions]) => (
             <div key={date} className="mb-8">
               <Typography className="text-sm font-semibold" color="indigo">

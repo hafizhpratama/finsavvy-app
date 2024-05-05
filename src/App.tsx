@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import './App.css'
 import { AuthProvider } from './contexts/AuthContext'
@@ -6,6 +7,7 @@ import DashboardPage from './pages/dashboard/DashboardPage'
 import LoginPage from './pages/login/index/LoginPage'
 import ErrorBoundary from './components/ErrorBoundary'
 import TransactionsPage from './pages/transactions/index/TransactionsPage'
+import OfflineModal from './components/UI/Modal/OfflineModal'
 
 const router = createBrowserRouter([
   {
@@ -35,12 +37,43 @@ const router = createBrowserRouter([
 ])
 
 function App() {
+  const [isOnline, setIsOnline] = useState(navigator.onLine)
+  const [showOfflineModal, setShowOfflineModal] = useState(false)
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true)
+    const handleOffline = () => setIsOnline(false)
+
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!isOnline) {
+      setShowOfflineModal(true)
+    } else {
+      setShowOfflineModal(false)
+    }
+  }, [isOnline])
+
+  const handleCloseModal = () => {
+    setShowOfflineModal(false)
+  }
+
   return (
-    <AuthProvider>
-      <div className="inset-0 bg-gray-100 py-4">
-        <RouterProvider router={router} />
-      </div>
-    </AuthProvider>
+    <>
+      {showOfflineModal && <OfflineModal onClose={handleCloseModal} />}
+      <AuthProvider>
+        <div className="inset-0 bg-gray-100 py-4">
+          <RouterProvider router={router} />
+        </div>
+      </AuthProvider>
+    </>
   )
 }
 
