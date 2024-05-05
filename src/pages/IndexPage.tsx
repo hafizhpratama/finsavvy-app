@@ -75,7 +75,7 @@ const IndexPage: React.FC<IndexPageProps> = ({ children, refreshData, sendAlertM
         <div className="mx-auto grid h-full max-w-lg grid-cols-3">
           <Link
             to="/"
-            className={`group inline-flex flex-col items-center justify-center rounded-s-full px-5 ${location.pathname === '/' ? 'bg-blue-50' : 'bg-white hover:bg-gray-50'}`}
+            className={`group inline-flex flex-col items-center justify-center rounded-s-full px-5 ${location.pathname === '/' ? 'bg-green-50' : 'bg-white hover:bg-gray-50'}`}
           >
             <FaHome size={24} className="text-gray-400" />
             <span className="sr-only">Home</span>
@@ -83,7 +83,7 @@ const IndexPage: React.FC<IndexPageProps> = ({ children, refreshData, sendAlertM
           <div className="flex items-center justify-center">
             <button
               type="button"
-              className="group inline-flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 font-medium hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800"
+              className="group inline-flex h-10 w-10 items-center justify-center rounded-full bg-green-600 font-medium hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 dark:focus:ring-green-800"
               onClick={openModal}
             >
               <FaPlus size={20} color="white" />
@@ -91,7 +91,7 @@ const IndexPage: React.FC<IndexPageProps> = ({ children, refreshData, sendAlertM
           </div>
           <Link
             to="/transactions"
-            className={`group inline-flex flex-col items-center justify-center rounded-e-full px-5 ${location.pathname === '/transactions' ? 'bg-blue-50' : 'bg-white hover:bg-gray-50'}`}
+            className={`group inline-flex flex-col items-center justify-center rounded-e-full px-5 ${location.pathname === '/transactions' ? 'bg-green-50' : 'bg-white hover:bg-gray-50'}`}
           >
             <FaDollarSign size={24} className="text-gray-400" />
           </Link>
