@@ -43,7 +43,7 @@ const ViewTransactionModal: React.FC<ViewTransactionModalProps> = ({ closeModal,
                     <div className="flex-1">
                       <Typography className="text-sm font-normal text-black">{transaction.notes}</Typography>
                     </div>
-                    <Typography className="text-sm font-normal text-black">Rp. {transaction.total?.toLocaleString() ?? '0'}</Typography>
+                    <Typography className="text-sm font-normal text-black">{transaction.total?.toLocaleString() ?? '0'}</Typography>
                   </div>
                 ))}
               </div>

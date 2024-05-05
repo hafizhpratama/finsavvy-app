@@ -24,6 +24,8 @@ export async function getTransactionsByUserId(userId: string, filterDate?: DateV
       query = query.gte('date', filterDate.startDate).lte('date', filterDate.endDate)
     }
 
+    query = query.order('date', { ascending: false })
+
     const { data, error } = await query
 
     if (error) {
