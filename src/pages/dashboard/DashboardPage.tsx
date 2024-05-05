@@ -3,8 +3,10 @@ import ReactApexChart from 'react-apexcharts'
 import { BiCheckCircle } from 'react-icons/bi'
 import {
   MdAttachMoney,
+  MdCleaningServices,
   MdDirectionsCar,
   MdHome,
+  MdHouse,
   MdLocalHospital,
   MdRestaurant,
   MdSchool,
@@ -201,7 +203,7 @@ const DashboardPage: React.FC = () => {
       Gifts: '#068FFF',
       'Income Other': '#3A98B9',
       // Outcome categories
-      Utilities: '#CF0A0A',
+      Bills: '#CF0A0A',
       Groceries: '#ADDDD0',
       Transportation: '#FFDE00',
       Dining: '#F73D93',
@@ -211,6 +213,8 @@ const DashboardPage: React.FC = () => {
       Insurance: '#FF597B',
       'Outcome Other': '#E55604',
       Rent: '#F273E6',
+      'Cleaning Household': '#FEFAF6',
+      Houseware: '#124076',
     }
 
     return Object.entries(categoryMap).map(([categoryName, total]) => ({
@@ -285,7 +289,7 @@ const DashboardPage: React.FC = () => {
     Investments: MdAttachMoney,
     Gifts: MdAttachMoney,
     Other: MdAttachMoney,
-    Utilities: MdHome,
+    Bills: MdHome,
     Groceries: MdShoppingCart,
     Transportation: MdDirectionsCar,
     Dining: MdRestaurant,
@@ -294,11 +298,14 @@ const DashboardPage: React.FC = () => {
     Education: MdSchool,
     Insurance: MdSecurity,
     Rent: MdHome,
+    'Outcome Other': MdAttachMoney,
+    'Cleaning Household': MdCleaningServices,
+    Houseware: MdHouse,
   }
 
   const getCategoryColor = (category: string): string => {
     switch (category) {
-      case 'Utilities':
+      case 'Bills':
         return '#CF0A0A'
       case 'Groceries':
         return '#ADDDD0'
@@ -318,6 +325,10 @@ const DashboardPage: React.FC = () => {
         return '#E55604'
       case 'Rent':
         return '#F273E6'
+      case 'Cleaning Household':
+        return '#FEFAF6'
+      case 'Houseware':
+        return '#124076'
       default:
         return '#F0F3FF'
     }

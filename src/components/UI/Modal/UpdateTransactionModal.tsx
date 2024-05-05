@@ -70,7 +70,7 @@ const UpdateTransactionModal: React.FC<UpdateTransactionModalProps> = ({ closeMo
   ]
 
   const outcomeCategories = [
-    { category_id: 7, category_name: 'Utilities' },
+    { category_id: 7, category_name: 'Bills' },
     { category_id: 8, category_name: 'Groceries' },
     { category_id: 9, category_name: 'Transportation' },
     { category_id: 10, category_name: 'Dining' },
@@ -80,6 +80,8 @@ const UpdateTransactionModal: React.FC<UpdateTransactionModalProps> = ({ closeMo
     { category_id: 14, category_name: 'Insurance' },
     { category_id: 15, category_name: 'Other' },
     { category_id: 6, category_name: 'Rent' },
+    { category_id: 16, category_name: 'Cleaning Household' },
+    { category_id: 17, category_name: 'Houseware' },
   ]
 
   const renderOptions = () => {
