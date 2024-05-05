@@ -22,6 +22,7 @@ import { getTransactionsByUserId, getCategories } from '../../services/supabaseS
 import { useAuth } from '../../contexts/AuthContext'
 import IndexPage from '../IndexPage'
 import ErrorBoundary from '../../components/ErrorBoundary'
+import ViewTransactionModal from '../../components/UI/Modal/ViewTransactionModal'
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuth()
@@ -43,6 +44,8 @@ const DashboardPage: React.FC = () => {
     startDate: startOfMonth.toISOString().split('T')[0],
     endDate: endOfMonth.toISOString().split('T')[0],
   })
+  const [showModal, setShowModal] = useState(false)
+  const [selectedItem, setSelectedItem] = useState<Transaction[]>()
 
   const handleRefreshData = () => setRefreshData((prevState) => !prevState)
 
@@ -93,8 +96,13 @@ const DashboardPage: React.FC = () => {
     transactions: Transaction[],
     categories: Category[],
     filterDate: DateValueType,
-  ): { title: string; amount: number; percentage: number }[] => {
-    const categoryMap: { [key: string]: number } = {}
+  ): {
+    title: string
+    transactions: Transaction[]
+    amount: number
+    percentage: number
+  }[] => {
+    const categoryMap: { [key: string]: { transactions: Transaction[]; totalSpent: number } } = {}
 
     const filteredTransactions = transactions.filter((transaction) => {
       const transactionDate = new Date(transaction.date || '').toISOString().split('T')[0]
@@ -109,17 +117,21 @@ const DashboardPage: React.FC = () => {
     filteredTransactions.forEach((transaction) => {
       const category = categories.find((cat) => cat.category_id === transaction.category_id)
       if (category && transaction.category_type === 'outcome') {
-        totalSpending += transaction.total || 0
         let categoryName = category ? category.category_name : 'Other'
-        categoryMap[categoryName] = (categoryMap[categoryName] || 0) + (transaction.total || 0)
+        if (!categoryMap[categoryName]) {
+          categoryMap[categoryName] = { transactions: [], totalSpent: 0 }
+        }
+        categoryMap[categoryName].transactions.push(transaction)
+        categoryMap[categoryName].totalSpent += transaction.total || 0
+        totalSpending += transaction.total || 0
       }
     })
 
-    const sortedCategories = Object.entries(categoryMap).sort((a, b) => b[1] - a[1])
-    const result = sortedCategories.map(([categoryName, total]) => ({
+    const result = Object.entries(categoryMap).map(([categoryName, { transactions, totalSpent }]) => ({
       title: categoryName,
-      amount: total,
-      percentage: (total / totalSpending) * 100,
+      transactions: transactions,
+      amount: totalSpent,
+      percentage: (totalSpent / totalSpending) * 100,
     }))
 
     return result
@@ -309,6 +321,16 @@ const DashboardPage: React.FC = () => {
     }
   }
 
+  const handleListItemClick = (item: Transaction[]) => {
+    setSelectedItem(item)
+    setShowModal(true)
+  }
+
+  const handleCloseModal = () => {
+    setShowModal(false)
+    setSelectedItem(undefined)
+  }
+
   if (error) {
     return <ErrorBoundary errorCode={500} errorMessage={error} />
   }
@@ -431,7 +453,7 @@ const DashboardPage: React.FC = () => {
                       const iconColor = getCategoryColor(item.title)
                       return (
                         // @ts-ignore
-                        <ListItem key={index} className="flex items-center">
+                        <ListItem key={index} className="flex items-center" onClick={() => handleListItemClick(item.transactions)}>
                           {/* @ts-ignore */}
                           <ListItemPrefix>
                             <IconComponent className="text-3xl" style={{ color: iconColor }} />
@@ -457,6 +479,7 @@ const DashboardPage: React.FC = () => {
             </div>
           </Card>
         </div>
+        {showModal && <ViewTransactionModal closeModal={handleCloseModal} transactions={selectedItem} />}
       </IndexPage>
     </>
   )
