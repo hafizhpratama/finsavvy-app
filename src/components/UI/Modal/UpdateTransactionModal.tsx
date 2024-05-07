@@ -1,10 +1,10 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Option, Textarea } from '@material-tailwind/react'
 import Typography from '../Typography'
 import Select from '../Select'
 import Input from '../Input'
 import Button from '../Button'
-import { deleteTransaction, updateTransaction } from '../../../services/supabaseService'
+import { deleteTransaction, getCategories, updateTransaction } from '../../../services/supabaseService'
 import { useAuth } from '../../../contexts/AuthContext'
 import { TbTrash } from 'react-icons/tb'
 
@@ -21,7 +21,26 @@ const UpdateTransactionModal: React.FC<UpdateTransactionModalProps> = ({ closeMo
   const [category, setCategory] = useState<string | undefined>(transaction?.category_id?.toString())
   const [notes, setNotes] = useState<string>(transaction?.notes || '')
   const [date, setDate] = useState<string>(transaction.date || '')
+  const [categories, setCategories] = useState<Category[]>([])
+  const [isLoading, setIsLoading] = useState<boolean>(false)
   const { user } = useAuth()
+
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        setIsLoading(true)
+        const fetchedCategories = await getCategories(user?.id, type)
+        if (fetchedCategories) {
+          setCategories(fetchedCategories)
+        }
+        setIsLoading(false)
+      } catch (error) {
+        console.error('Error fetching categories:', error)
+      }
+    }
+
+    fetchCategories()
+  }, [type, user?.id])
 
   const handleSave = async () => {
     const formattedTotal = parseInt(total.replace(/,/g, ''), 10)
@@ -61,38 +80,9 @@ const UpdateTransactionModal: React.FC<UpdateTransactionModalProps> = ({ closeMo
     return value.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',')
   }
 
-  const incomeCategories = [
-    { category_id: 1, category_name: 'Salary' },
-    { category_id: 2, category_name: 'Interest' },
-    { category_id: 3, category_name: 'Investments' },
-    { category_id: 4, category_name: 'Gifts' },
-    { category_id: 5, category_name: 'Other' },
-  ]
-
-  const outcomeCategories = [
-    { category_id: 7, category_name: 'Bills' },
-    { category_id: 8, category_name: 'Groceries' },
-    { category_id: 9, category_name: 'Transportation' },
-    { category_id: 10, category_name: 'Dining' },
-    { category_id: 11, category_name: 'Entertainment' },
-    { category_id: 12, category_name: 'Healthcare' },
-    { category_id: 13, category_name: 'Education' },
-    { category_id: 14, category_name: 'Insurance' },
-    { category_id: 15, category_name: 'Other' },
-    { category_id: 6, category_name: 'Rent' },
-    { category_id: 16, category_name: 'Cleaning Household' },
-    { category_id: 17, category_name: 'Houseware' },
-  ]
-
   const renderOptions = () => {
-    if (type === 'income') {
-      return incomeCategories.map((cat) => (
-        <Option key={cat.category_id} value={cat.category_id.toString()}>
-          {cat.category_name}
-        </Option>
-      ))
-    } else if (type === 'outcome') {
-      return outcomeCategories.map((cat) => (
+    if (categories) {
+      return categories.map((cat) => (
         <Option key={cat.category_id} value={cat.category_id.toString()}>
           {cat.category_name}
         </Option>
@@ -118,7 +108,6 @@ const UpdateTransactionModal: React.FC<UpdateTransactionModalProps> = ({ closeMo
                 value={formatTotal(total)}
                 onChange={(e) => setTotal(formatTotal(e.target.value))}
               />
-
               <Select
                 variant="outlined"
                 label="Type"
@@ -132,18 +121,24 @@ const UpdateTransactionModal: React.FC<UpdateTransactionModalProps> = ({ closeMo
                 <Option value="income">Income</Option>
                 <Option value="outcome">Outcome</Option>
               </Select>
-
-              <Select
-                variant="outlined"
-                label="Select Category"
-                value={category || ''}
-                onChange={(e: any) => {
-                  setCategory(e)
-                }}
-              >
-                {renderOptions()}
-              </Select>
-
+              {isLoading ? (
+                <div className="max-w-full animate-pulse">
+                  <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
+                    &nbsp;
+                  </Typography>
+                </div>
+              ) : (
+                <Select
+                  variant="outlined"
+                  label="Select Category"
+                  value={category || ''}
+                  onChange={(e: any) => {
+                    setCategory(e)
+                  }}
+                >
+                  {renderOptions()}
+                </Select>
+              )}
               {/* @ts-ignore */}
               <Textarea variant="outlined" label="Note" value={notes} onChange={(e) => setNotes(e.target.value)} />
               <Input type="date" variant="outlined" label="Date" value={date} onChange={(e) => setDate(e.target.value)} />

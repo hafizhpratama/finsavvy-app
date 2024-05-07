@@ -94,6 +94,36 @@ const DashboardPage: React.FC = () => {
     setMonthlySpendingData(monthlySpendingData)
   }, [transactions, selectedYear])
 
+  const categoryConfig = {
+    Salary: { icon: MdAttachMoney, color: '#15F5BA' },
+    Interest: { icon: MdAttachMoney, color: '#98A8F8' },
+    Investments: { icon: MdAttachMoney, color: '#6F38C5' },
+    Gifts: { icon: MdAttachMoney, color: '#068FFF' },
+    Other: { icon: MdAttachMoney, color: '#3A98B9' },
+    Bills: { icon: MdHome, color: '#CF0A0A' },
+    Groceries: { icon: MdShoppingCart, color: '#ADDDD0' },
+    Transportation: { icon: MdDirectionsCar, color: '#FFDE00' },
+    Dining: { icon: MdRestaurant, color: '#F73D93' },
+    Entertainment: { icon: MdTheaters, color: '#EA906C' },
+    Healthcare: { icon: MdLocalHospital, color: '#5F264A' },
+    Education: { icon: MdSchool, color: '#FF6000' },
+    Insurance: { icon: MdSecurity, color: '#FF597B' },
+    Rent: { icon: MdHome, color: '#F273E6' },
+    'Outcome Other': { icon: MdAttachMoney, color: '#E55604' },
+    'Cleaning Household': { icon: MdCleaningServices, color: '#FEFAF6' },
+    Houseware: { icon: MdHouse, color: '#124076' },
+  }
+
+  const getCategoryIcon = (category: string): React.ComponentType<any> => {
+    const iconComponent = categoryConfig[category as keyof typeof categoryConfig]?.icon || MdAttachMoney
+    return iconComponent
+  }
+
+  const getCategoryColor = (category: string): string => {
+    const color = categoryConfig[category as keyof typeof categoryConfig]?.color || '#F0F3FF'
+    return color
+  }
+
   const calculateTopSpending = (
     transactions: Transaction[],
     categories: Category[],
@@ -195,33 +225,11 @@ const DashboardPage: React.FC = () => {
       totalAllCategories += transaction.total || 0
     })
 
-    const categoryColors: { [key: string]: string } = {
-      // Income categories
-      Salary: '#15F5BA',
-      Interest: '#98A8F8',
-      Investments: '#6F38C5',
-      Gifts: '#068FFF',
-      'Income Other': '#3A98B9',
-      // Outcome categories
-      Bills: '#CF0A0A',
-      Groceries: '#ADDDD0',
-      Transportation: '#FFDE00',
-      Dining: '#F73D93',
-      Entertainment: '#EA906C',
-      Healthcare: '#5F264A',
-      Education: '#FF6000',
-      Insurance: '#FF597B',
-      'Outcome Other': '#E55604',
-      Rent: '#F273E6',
-      'Cleaning Household': '#FEFAF6',
-      Houseware: '#124076',
-    }
-
     return Object.entries(categoryMap).map(([categoryName, total]) => ({
       label: categoryName,
       amount: total,
       percentage: (total / totalAllCategories) * 100,
-      color: categoryColors[categoryName] || '#F0F3FF',
+      color: getCategoryColor(categoryName),
     }))
   }
 
@@ -281,57 +289,6 @@ const DashboardPage: React.FC = () => {
     setTimeout(() => {
       setIsVisible(false)
     }, 5000)
-  }
-
-  const categoryIcons: Record<string, React.ComponentType<any>> = {
-    Salary: MdAttachMoney,
-    Interest: MdAttachMoney,
-    Investments: MdAttachMoney,
-    Gifts: MdAttachMoney,
-    Other: MdAttachMoney,
-    Bills: MdHome,
-    Groceries: MdShoppingCart,
-    Transportation: MdDirectionsCar,
-    Dining: MdRestaurant,
-    Entertainment: MdTheaters,
-    Healthcare: MdLocalHospital,
-    Education: MdSchool,
-    Insurance: MdSecurity,
-    Rent: MdHome,
-    'Outcome Other': MdAttachMoney,
-    'Cleaning Household': MdCleaningServices,
-    Houseware: MdHouse,
-  }
-
-  const getCategoryColor = (category: string): string => {
-    switch (category) {
-      case 'Bills':
-        return '#CF0A0A'
-      case 'Groceries':
-        return '#ADDDD0'
-      case 'Transportation':
-        return '#FFDE00'
-      case 'Dining':
-        return '#F73D93'
-      case 'Entertainment':
-        return '#EA906C'
-      case 'Healthcare':
-        return '#5F264A'
-      case 'Education':
-        return '#FF6000'
-      case 'Insurance':
-        return '#FF597B'
-      case 'Other':
-        return '#E55604'
-      case 'Rent':
-        return '#F273E6'
-      case 'Cleaning Household':
-        return '#FEFAF6'
-      case 'Houseware':
-        return '#124076'
-      default:
-        return '#F0F3FF'
-    }
   }
 
   const handleListItemClick = (item: Transaction[]) => {
@@ -462,7 +419,7 @@ const DashboardPage: React.FC = () => {
                 <List>
                   {calculateTopSpending(transactions, categories, filterDate).length > 0 ? (
                     calculateTopSpending(transactions, categories, filterDate).map((item, index) => {
-                      const IconComponent = categoryIcons[item.title]
+                      const IconComponent = getCategoryIcon(item.title)
                       const iconColor = getCategoryColor(item.title)
                       return (
                         // @ts-ignore
