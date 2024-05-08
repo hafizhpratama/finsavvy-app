@@ -25,8 +25,10 @@ export async function addTransaction(data: Transaction, user: User | null | unde
 
 // Retrieve transactions by user ID
 export async function getTransactionsByUserId(userId: string, filterDate?: DateValueType): Promise<Transaction[] | null> {
-  const query = supabase.from('transaction').select('*').eq('user_id', userId).is('deleted_at', null).order('date', { ascending: false })
+  const query = supabase.from('transaction').select('*').eq('user_id', userId).is('deleted_at', null)
   if (filterDate) query.gte('date', filterDate.startDate).lte('date', filterDate.endDate)
+  query.order('date', { ascending: false })
+  query.order('total', { ascending: false })
   return await handleQuery<Transaction[]>(query)
 }
 
@@ -71,12 +73,12 @@ export async function getTopSpendingCategories(userId: string, filterDate?: Date
     }
   })
 
-  const categoriesData = await handleQuery<Category[]>(supabase.from('categories').select('category_id, category_name'))
+  const categoriesData = await handleQuery<Category[]>(supabase.from('categories').select('id, name'))
   if (!categoriesData) return null
 
   const categoryNamesMap = new Map<string, string>()
   categoriesData.forEach((category) => {
-    categoryNamesMap.set(category.category_id.toString(), category.category_name)
+    categoryNamesMap.set(category.id.toString(), category.name)
   })
 
   const categorySpendingArray: CategorySummary[] = []
@@ -142,12 +144,12 @@ export async function getPieChartDataByUserId(userId: string, filterDate?: DateV
 
     // Fetch category names from the 'categories' table
     const categoryNamesMap = new Map<string, string>()
-    const categoriesData = await supabase.from('categories').select('category_id, category_name')
+    const categoriesData = await supabase.from('categories').select('id, name')
     if (categoriesData.error) {
       throw categoriesData.error
     }
     categoriesData.data?.forEach((category) => {
-      categoryNamesMap.set(category.category_id.toString(), category.category_name)
+      categoryNamesMap.set(category.id.toString(), category.name)
     })
 
     // Calculate total amount and category totals
@@ -238,7 +240,7 @@ export async function getCategories(userId?: string, transactionType?: string): 
     }
 
     if (transactionType) {
-      query.eq('transaction_type', transactionType)
+      query.eq('type', transactionType)
     }
 
     // Execute the query

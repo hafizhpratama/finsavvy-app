@@ -90,8 +90,8 @@ const UpdateTransactionModal: React.FC<UpdateTransactionModalProps> = ({ closeMo
   const renderOptions = () => {
     if (categories) {
       return categories.map((cat) => (
-        <Option key={cat.category_id} value={cat.category_id.toString()}>
-          {cat.category_name}
+        <Option key={cat.id} value={cat.id.toString()}>
+          {cat.name}
         </Option>
       ))
     } else {

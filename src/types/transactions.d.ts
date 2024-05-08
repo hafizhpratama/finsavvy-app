@@ -30,8 +30,8 @@ interface BarChartEntry {
 }
 
 interface Category {
-  category_id: number;
+  id: number;
   user_id: number | null;
-  category_name: string;
-  transaction_type: string;
+  name: string;
+  type: string;
 }
