@@ -1,30 +1,23 @@
 import React, { useState, useEffect } from 'react'
 import ReactApexChart from 'react-apexcharts'
 import { BiCheckCircle } from 'react-icons/bi'
-import {
-  MdAttachMoney,
-  MdCleaningServices,
-  MdDirectionsCar,
-  MdHome,
-  MdHouse,
-  MdLocalHospital,
-  MdRestaurant,
-  MdSchool,
-  MdSecurity,
-  MdShoppingCart,
-  MdTheaters,
-} from 'react-icons/md'
 import { Alert, List, ListItem, ListItemPrefix, Option } from '@material-tailwind/react'
 import Balance from '../../components/Balance'
 import Card from '../../components/UI/Card'
 import Datepicker, { DateValueType } from 'react-tailwindcss-datepicker'
 import Select from '../../components/UI/Select'
 import Typography from '../../components/UI/Typography'
-import { getTransactionsByUserId, getCategories } from '../../services/supabaseService'
+import {
+  getTopSpendingCategories,
+  getTransactionsByCategoryAndDate,
+  getPieChartDataByUserId,
+  getBarChartDataByUserId,
+} from '../../services/supabaseService'
 import { useAuth } from '../../contexts/AuthContext'
-import IndexPage from '../IndexPage'
+import IndexPage from '../page'
 import ErrorBoundary from '../../components/ErrorBoundary'
 import ViewTransactionModal from '../../components/UI/Modal/ViewTransactionModal'
+import { getCategoryColor, getCategoryIcon } from '../../utils/categoryUtils'
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuth()
@@ -32,15 +25,13 @@ const DashboardPage: React.FC = () => {
   const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
   const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0)
   const [isLoading, setIsLoading] = useState<boolean>(true)
-  const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [categories, setCategories] = useState<Category[]>([])
   const [selectedYear, setSelectedYear] = useState<number>(today.getFullYear())
   const [refreshData, setRefreshData] = useState<boolean>(false)
   const [isVisible, setIsVisible] = useState<boolean>(false)
   const [alertMessage, setAlertMessage] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
-  const [monthlySpendingData, setMonthlySpendingData] = useState<{ label: string; amount: number }[]>([])
-  const [pieChartData, setPieChartData] = useState<{ label: string; amount: number; color: string; percentage: number }[]>([])
+  const [monthlySpendingData, setMonthlySpendingData] = useState<{ label: string; total: number }[] | null>([])
+  const [pieChartData, setPieChartData] = useState<{ title: string; total: number; percentage: number; color: string }[] | null>([])
   const [selectedFilter, setSelectedFilter] = useState<string>('outcome')
   const [filterDate, setFilterDate] = useState<DateValueType>({
     startDate: startOfMonth.toISOString().split('T')[0],
@@ -48,23 +39,18 @@ const DashboardPage: React.FC = () => {
   })
   const [showModal, setShowModal] = useState(false)
   const [selectedItem, setSelectedItem] = useState<Transaction[]>()
+  const [topSpendingData, setTopSpendingData] = useState<
+    { category_id?: string; title: string; total: number; percentage: number; color: string }[] | null
+  >([])
 
   const handleRefreshData = () => setRefreshData((prevState) => !prevState)
 
   const handleValueChange = (value: DateValueType) => {
-    setIsLoading(true)
     setFilterDate(value)
-    const filteredPieChartData = calculatePieChartData(transactions, value, selectedFilter)
-    setPieChartData(filteredPieChartData)
-    setIsLoading(false)
   }
 
   const handleFilterChange = (value: string) => {
-    setIsLoading(true)
     setSelectedFilter(value)
-    const filteredPieChartData = calculatePieChartData(transactions, filterDate, value)
-    setPieChartData(filteredPieChartData)
-    setIsLoading(false)
   }
 
   useEffect(() => {
@@ -72,166 +58,51 @@ const DashboardPage: React.FC = () => {
       try {
         setIsLoading(true)
         const userId = user?.id || ''
-        const [transactionData, categoryData] = await Promise.all([getTransactionsByUserId(userId), getCategories(userId)])
-        if (transactionData) setTransactions(transactionData)
-        if (categoryData) setCategories(categoryData)
+        const data = await getTopSpendingCategories(userId, filterDate)
+        setTopSpendingData(data ?? [])
       } catch (error: any) {
-        setError(error || 'An error occurred')
+        setError(error?.message || 'An error occurred')
       } finally {
         setIsLoading(false)
       }
     }
     fetchData()
-  }, [refreshData])
+  }, [refreshData, filterDate, user?.id])
 
   useEffect(() => {
-    const pieChartData = calculatePieChartData(transactions, filterDate, selectedFilter)
-    setPieChartData(pieChartData)
-  }, [transactions, filterDate, selectedFilter])
-
-  useEffect(() => {
-    const monthlySpendingData = calculateMonthlySpending(transactions, selectedYear)
-    setMonthlySpendingData(monthlySpendingData)
-  }, [transactions, selectedYear])
-
-  const categoryConfig = {
-    Salary: { icon: MdAttachMoney, color: '#15F5BA' },
-    Interest: { icon: MdAttachMoney, color: '#98A8F8' },
-    Investments: { icon: MdAttachMoney, color: '#6F38C5' },
-    Gifts: { icon: MdAttachMoney, color: '#068FFF' },
-    Other: { icon: MdAttachMoney, color: '#3A98B9' },
-    Bills: { icon: MdHome, color: '#CF0A0A' },
-    Groceries: { icon: MdShoppingCart, color: '#ADDDD0' },
-    Transportation: { icon: MdDirectionsCar, color: '#FFDE00' },
-    Dining: { icon: MdRestaurant, color: '#F73D93' },
-    Entertainment: { icon: MdTheaters, color: '#EA906C' },
-    Healthcare: { icon: MdLocalHospital, color: '#5F264A' },
-    Education: { icon: MdSchool, color: '#FF6000' },
-    Insurance: { icon: MdSecurity, color: '#FF597B' },
-    Rent: { icon: MdHome, color: '#F273E6' },
-    'Outcome Other': { icon: MdAttachMoney, color: '#E55604' },
-    'Cleaning Household': { icon: MdCleaningServices, color: '#FEFAF6' },
-    Houseware: { icon: MdHouse, color: '#124076' },
-  }
-
-  const getCategoryIcon = (category: string): React.ComponentType<any> => {
-    const iconComponent = categoryConfig[category as keyof typeof categoryConfig]?.icon || MdAttachMoney
-    return iconComponent
-  }
-
-  const getCategoryColor = (category: string): string => {
-    const color = categoryConfig[category as keyof typeof categoryConfig]?.color || '#F0F3FF'
-    return color
-  }
-
-  const calculateTopSpending = (
-    transactions: Transaction[],
-    categories: Category[],
-    filterDate: DateValueType,
-  ): {
-    title: string
-    transactions: Transaction[]
-    amount: number
-    percentage: number
-  }[] => {
-    const categoryMap: { [key: string]: { transactions: Transaction[]; totalSpent: number } } = {}
-
-    const filteredTransactions = transactions.filter((transaction) => {
-      const transactionDate = new Date(transaction.date || '').toISOString().split('T')[0]
-      const today = new Date()
-      return (
-        transactionDate >= (filterDate?.startDate || new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0]) &&
-        transactionDate <= (filterDate?.endDate || new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0])
-      )
-    })
-
-    let totalSpending = 0
-    filteredTransactions.forEach((transaction) => {
-      const category = categories.find((cat) => cat.category_id === transaction.category_id)
-      if (category && transaction.category_type === 'outcome') {
-        let categoryName = category ? category.category_name : 'Other'
-        if (!categoryMap[categoryName]) {
-          categoryMap[categoryName] = { transactions: [], totalSpent: 0 }
-        }
-        categoryMap[categoryName].transactions.push(transaction)
-        categoryMap[categoryName].totalSpent += transaction.total || 0
-        totalSpending += transaction.total || 0
+    const fetchData = async () => {
+      try {
+        setIsLoading(true)
+        const userId = user?.id || ''
+        const data = await getPieChartDataByUserId(userId, filterDate, selectedFilter)
+        setPieChartData(data ?? [])
+      } catch (error: any) {
+        setError(error?.message || 'An error occurred')
+      } finally {
+        setIsLoading(false)
       }
-    })
+    }
+    fetchData()
+  }, [refreshData, filterDate, selectedFilter, user?.id])
 
-    const result = Object.entries(categoryMap).map(([categoryName, { transactions, totalSpent }]) => ({
-      title: categoryName,
-      transactions: transactions,
-      amount: totalSpent,
-      percentage: (totalSpent / totalSpending) * 100,
-    }))
-
-    result.sort((a, b) => b.amount - a.amount)
-
-    return result
-  }
-
-  const calculateMonthlySpending = (transactions: Transaction[], selectedYear: number): { label: string; amount: number }[] => {
-    const monthsToShow = selectedYear === today.getFullYear() ? today.getMonth() + 1 : 12
-
-    const monthlySpending: { [key: string]: number } = {}
-
-    for (let i = 0; i < monthsToShow; i++) {
-      const month = new Date(selectedYear, i, 1)
-      const nextMonth = new Date(selectedYear, i + 1, 1)
-      const monthTransactions = transactions.filter(
-        (transaction) =>
-          new Date(transaction.date || '') >= month &&
-          new Date(transaction.date || '') < nextMonth &&
-          transaction.category_type === 'outcome',
-      )
-      const monthTotal = monthTransactions.reduce((total, transaction) => total + (transaction?.total || 0), 0)
-
-      monthlySpending[month.toLocaleDateString('default', { month: 'long' })] = monthTotal
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true)
+        const userId = user?.id || ''
+        const data = await getBarChartDataByUserId(userId, selectedYear)
+        setMonthlySpendingData(data ?? [])
+      } catch (error) {
+        console.error('Error fetching transaction data:', error)
+      } finally {
+        setIsLoading(false)
+      }
     }
 
-    return Object.entries(monthlySpending).map(([month, total]) => ({ label: month, amount: total }))
-  }
-
-  const calculatePieChartData = (
-    transactions: Transaction[],
-    filterDate: DateValueType,
-    selectedFilter: string,
-  ): { label: string; amount: number; percentage: number; color: string }[] => {
-    const categoryMap: { [key: string]: number } = {}
-    let totalAllCategories = 0
-
-    const filteredTransactions = transactions.filter((transaction) => {
-      const transactionDate = new Date(transaction.date || '').toISOString().split('T')[0]
-      return (
-        transactionDate >= (filterDate?.startDate || new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0]) &&
-        transactionDate <= (filterDate?.endDate || new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0]) &&
-        transaction.category_type === selectedFilter
-      )
-    })
-
-    filteredTransactions.forEach((transaction) => {
-      const categoryId = transaction.category_id
-      const category = categories.find((cat) => cat.category_id === categoryId)
-      let categoryName = category ? category.category_name : 'Other'
-
-      if (transaction.category_type === 'income' && categoryName === 'Other') {
-        categoryName = 'Income Other'
-      } else if (transaction.category_type === 'outcome' && categoryName === 'Other') {
-        categoryName = 'Outcome Other'
-      }
-
-      categoryMap[categoryName] = (categoryMap[categoryName] || 0) + (transaction?.total || 0)
-      totalAllCategories += transaction.total || 0
-    })
-
-    return Object.entries(categoryMap).map(([categoryName, total]) => ({
-      label: categoryName,
-      amount: total,
-      percentage: (total / totalAllCategories) * 100,
-      color: getCategoryColor(categoryName),
-    }))
-  }
+    if (selectedYear) {
+      fetchData()
+    }
+  }, [selectedYear, user?.id])
 
   const barChartOptions: ApexCharts.ApexOptions = {
     dataLabels: {
@@ -248,7 +119,7 @@ const DashboardPage: React.FC = () => {
     },
     colors: ['#020617'],
     xaxis: {
-      categories: monthlySpendingData.map(({ label }) => label),
+      categories: monthlySpendingData?.map(({ label }) => label) || [],
     },
     yaxis: {
       labels: {
@@ -268,8 +139,8 @@ const DashboardPage: React.FC = () => {
         show: false,
       },
     },
-    colors: pieChartData.map(({ color }) => color),
-    labels: pieChartData.map(({ label }) => label),
+    colors: pieChartData?.map(({ color }) => color) || [],
+    labels: pieChartData?.map(({ title }) => title) || [],
     legend: {
       position: 'bottom',
     },
@@ -291,9 +162,17 @@ const DashboardPage: React.FC = () => {
     }, 5000)
   }
 
-  const handleListItemClick = (item: Transaction[]) => {
-    setSelectedItem(item)
-    setShowModal(true)
+  const handleListItemClick = async (category_id?: string, filterDate?: DateValueType) => {
+    try {
+      setIsLoading(true)
+      setShowModal(true)
+      const items = await getTransactionsByCategoryAndDate(user?.id, category_id, filterDate)
+      setSelectedItem(items || [])
+      setIsLoading(false)
+    } catch (error) {
+      console.error('Error fetching transactions:', error)
+      setIsLoading(false)
+    }
   }
 
   const handleCloseModal = () => {
@@ -348,7 +227,7 @@ const DashboardPage: React.FC = () => {
                   series={[
                     {
                       name: 'Spending',
-                      data: monthlySpendingData.map((item) => item.amount),
+                      data: monthlySpendingData?.map((item) => item.total) || [],
                     },
                   ]}
                   type="bar"
@@ -361,7 +240,7 @@ const DashboardPage: React.FC = () => {
 
           <Card title="Spending Chart">
             <div className="mb-4 flex justify-between rounded-lg border-2 border-solid border-gray-300">
-              <Datepicker useRange value={filterDate} onChange={handleValueChange} />
+              <Datepicker value={filterDate} onChange={handleValueChange} separator={'~'} displayFormat={'DD/MM/YYYY'} />
             </div>
             <div className="mb-4">
               <Select value={selectedFilter} id="filter" label="Type" onChange={(e) => handleFilterChange(e || '')} className="w-full">
@@ -379,11 +258,11 @@ const DashboardPage: React.FC = () => {
               </div>
             ) : (
               <div className="flex flex-col items-center">
-                {pieChartData.length > 0 ? (
+                {pieChartData && pieChartData.length > 0 ? (
                   <div className="mb-4 w-full">
                     <ReactApexChart
-                      options={{ ...pieChartOptions, colors: pieChartData.map((item) => item.color), legend: { position: 'bottom' } }}
-                      series={pieChartData.map((item) => item.percentage)}
+                      options={{ ...pieChartOptions, legend: { position: 'bottom' } }}
+                      series={pieChartData?.map((item) => item.percentage)}
                       type="pie"
                       width="100%"
                       height={350}
@@ -417,13 +296,17 @@ const DashboardPage: React.FC = () => {
               ) : (
                 // @ts-ignore
                 <List>
-                  {calculateTopSpending(transactions, categories, filterDate).length > 0 ? (
-                    calculateTopSpending(transactions, categories, filterDate).map((item, index) => {
+                  {topSpendingData && topSpendingData.length > 0 ? (
+                    topSpendingData.map((item, index) => {
                       const IconComponent = getCategoryIcon(item.title)
                       const iconColor = getCategoryColor(item.title)
                       return (
                         // @ts-ignore
-                        <ListItem key={index} className="flex items-center" onClick={() => handleListItemClick(item.transactions)}>
+                        <ListItem
+                          key={index}
+                          className="flex items-center"
+                          onClick={() => handleListItemClick(item.category_id, filterDate)}
+                        >
                           {/* @ts-ignore */}
                           <ListItemPrefix>
                             <IconComponent className="text-3xl" style={{ color: iconColor }} />
@@ -432,8 +315,7 @@ const DashboardPage: React.FC = () => {
                             <Typography className="text-sm font-semibold text-black">
                               {item.title === 'Other' ? 'Outcome Other' : item.title}
                             </Typography>
-
-                            <Typography className="text-xs font-normal text-gray-500">Rp. {item.amount.toLocaleString()}</Typography>
+                            <Typography className="text-xs font-normal text-gray-500">Rp. {item.total.toLocaleString()}</Typography>
                           </div>
                           <div className="ml-auto">
                             <Typography className="text-xs font-semibold text-black">{item.percentage.toFixed(1)} %</Typography>
@@ -449,7 +331,7 @@ const DashboardPage: React.FC = () => {
             </div>
           </Card>
         </div>
-        {showModal && <ViewTransactionModal closeModal={handleCloseModal} transactions={selectedItem} />}
+        {showModal && <ViewTransactionModal closeModal={handleCloseModal} transactions={selectedItem} isLoading={isLoading} />}
       </IndexPage>
     </>
   )

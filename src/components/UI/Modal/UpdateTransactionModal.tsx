@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Option, Textarea } from '@material-tailwind/react'
+import { Option, Spinner, Textarea } from '@material-tailwind/react'
 import Typography from '../Typography'
 import Select from '../Select'
 import Input from '../Input'
@@ -36,6 +36,7 @@ const UpdateTransactionModal: React.FC<UpdateTransactionModalProps> = ({ closeMo
         setIsLoading(false)
       } catch (error) {
         console.error('Error fetching categories:', error)
+        setIsLoading(false)
       }
     }
 
@@ -43,6 +44,7 @@ const UpdateTransactionModal: React.FC<UpdateTransactionModalProps> = ({ closeMo
   }, [type, user?.id])
 
   const handleSave = async () => {
+    setIsLoading(true)
     const formattedTotal = parseInt(total.replace(/,/g, ''), 10)
     const updatedTransaction: Transaction = {
       ...transaction,
@@ -60,11 +62,14 @@ const UpdateTransactionModal: React.FC<UpdateTransactionModalProps> = ({ closeMo
       refreshData()
       sendAlertMessage('Transaction updated successfully.')
     } else {
-      sendAlertMessage(`Failed to update transaction: ${result.error}`)
+      sendAlertMessage(`Failed to update transaction: ${result}`)
     }
+
+    setIsLoading(false)
   }
 
   const handleDelete = async () => {
+    setIsLoading(true)
     const result = await deleteTransaction(transaction.id || 0, user)
 
     if (result.success) {
@@ -72,8 +77,10 @@ const UpdateTransactionModal: React.FC<UpdateTransactionModalProps> = ({ closeMo
       refreshData()
       sendAlertMessage('Transaction deleted successfully.')
     } else {
-      sendAlertMessage(`Failed to delete transaction: ${result.error}`)
+      sendAlertMessage(`Failed to delete transaction: ${result}`)
     }
+
+    setIsLoading(false)
   }
 
   const formatTotal = (value: string): string => {
@@ -145,14 +152,18 @@ const UpdateTransactionModal: React.FC<UpdateTransactionModalProps> = ({ closeMo
             </div>
           </div>
           <div className="flex items-center justify-between border-t py-4">
-            <Button className="p-2" variant="text" onClick={handleDelete}>
-              <TbTrash size={20} color="red" />
+            <Button className="p-2" variant="text" onClick={handleDelete} disabled={isLoading}>
+              {/* @ts-ignore */}
+              {isLoading ? <Spinner color="red" /> : <TbTrash size={20} color="red" />}
             </Button>
             <div className="flex gap-2">
-              <Button variant="outlined" onClick={closeModal}>
+              <Button variant="outlined" onClick={closeModal} disabled={isLoading}>
                 Cancel
               </Button>
-              <Button onClick={handleSave}>Save</Button>
+              <Button onClick={handleSave} disabled={isLoading}>
+                {/* @ts-ignore */}
+                {isLoading ? <Spinner /> : 'Submit'}
+              </Button>
             </div>
           </div>
         </div>

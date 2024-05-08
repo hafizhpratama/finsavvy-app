@@ -4,9 +4,10 @@ import Typography from '../Typography'
 interface ViewTransactionModalProps {
   closeModal: () => void
   transactions?: Transaction[]
+  isLoading?: boolean
 }
 
-const ViewTransactionModal: React.FC<ViewTransactionModalProps> = ({ closeModal, transactions }) => {
+const ViewTransactionModal: React.FC<ViewTransactionModalProps> = ({ closeModal, transactions, isLoading }) => {
   const groupedTransactions: { [key: string]: Transaction[] } = {}
   transactions?.forEach((transaction) => {
     const date: string = transaction.date ?? ''
@@ -32,28 +33,36 @@ const ViewTransactionModal: React.FC<ViewTransactionModalProps> = ({ closeModal,
           </button>
         </div>
         <div className="max-h-[calc(100vh-100px)] overflow-y-auto px-4 py-6">
-          {Object.entries(groupedTransactions).map(([date, transactions]) => (
-            <div key={date} className="mb-8">
-              <Typography className="text-sm font-semibold" color="indigo">
-                {formatDate(date)}
+          {isLoading ? (
+            <div className="max-w-full animate-pulse">
+              <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
+                &nbsp;
               </Typography>
-              <div>
-                {transactions
-                  .sort((a, b) => {
-                    if (a.total === undefined || b.total === undefined) return 0
-                    return b.total - a.total
-                  })
-                  .map((transaction, index) => (
-                    <div key={index} className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <Typography className="text-sm font-normal text-black">{transaction.notes}</Typography>
-                      </div>
-                      <Typography className="text-sm font-normal text-black">{transaction.total?.toLocaleString() ?? '0'}</Typography>
-                    </div>
-                  ))}
-              </div>
             </div>
-          ))}
+          ) : (
+            Object.entries(groupedTransactions).map(([date, transactions]) => (
+              <div key={date} className="mb-8">
+                <Typography className="text-sm font-semibold" color="indigo">
+                  {formatDate(date)}
+                </Typography>
+                <div>
+                  {transactions
+                    .sort((a, b) => {
+                      if (a.total === undefined || b.total === undefined) return 0
+                      return b.total - a.total
+                    })
+                    .map((transaction, index) => (
+                      <div key={index} className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <Typography className="text-sm font-normal text-black">{transaction.notes}</Typography>
+                        </div>
+                        <Typography className="text-sm font-normal text-black">{transaction.total?.toLocaleString() ?? '0'}</Typography>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            ))
+          )}
           {/* Display total spending */}
           <div className="mt-4 flex items-center justify-between border-t border-gray-200 pt-4">
             <Typography className="text-sm font-semibold text-black">Total Spending</Typography>

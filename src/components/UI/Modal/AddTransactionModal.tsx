@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Option, Textarea } from '@material-tailwind/react'
+import { Option, Spinner, Textarea } from '@material-tailwind/react'
 import { useAuth } from '../../../contexts/AuthContext'
 import { addTransaction, getCategories } from '../../../services/supabaseService'
 import Typography from '../Typography'
@@ -20,6 +20,7 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ closeModal, r
   const [notes, setNotes] = useState('')
   const [date, setDate] = useState('')
   const [categories, setCategories] = useState<Category[]>([])
+  const [isLoading, setIsLoading] = useState<boolean>(false)
   const { user } = useAuth()
 
   useEffect(() => {
@@ -33,6 +34,7 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ closeModal, r
   }, [user, type])
 
   const handleSave = async () => {
+    setIsLoading(true)
     const data: Transaction = {
       total: parseInt(total.replace(/,/g, ''), 10),
       category_id: parseInt(category),
@@ -47,7 +49,11 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ closeModal, r
       closeModal()
       refreshData()
       sendAlertMessage('Transaction added successfully.')
+    } else {
+      sendAlertMessage(`Failed to add transaction: ${result}`)
     }
+
+    setIsLoading(false)
   }
 
   const formatTotal = (value: string) => {
@@ -108,10 +114,13 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ closeModal, r
             </div>
           </div>
           <div className="flex justify-end gap-2 border-t py-4">
-            <Button variant="outlined" onClick={closeModal}>
+            <Button variant="outlined" onClick={closeModal} disabled={isLoading}>
               Cancel
             </Button>
-            <Button onClick={handleSave}>Save</Button>
+            <Button onClick={handleSave} disabled={isLoading}>
+              {/* @ts-ignore */}
+              {isLoading ? <Spinner /> : 'Submit'}
+            </Button>
           </div>
         </div>
       </div>

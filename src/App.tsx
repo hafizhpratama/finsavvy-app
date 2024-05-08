@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import './App.css'
 import { AuthProvider } from './contexts/AuthContext'
-import ProtectedRoute from './utils/ProtectedRoute'
-import DashboardPage from './pages/dashboard/DashboardPage'
-import LoginPage from './pages/login/index/LoginPage'
+import DashboardPage from './pages/dashboard/page'
+import LoginPage from './pages/login/index/page'
 import ErrorBoundary from './components/ErrorBoundary'
-import TransactionsPage from './pages/transactions/index/TransactionsPage'
+import TransactionsPage from './pages/transactions/index/page'
 import OfflineModal from './components/UI/Modal/OfflineModal'
+import ProtectedRoute from './utils/ProtectedRoute'
 
 const router = createBrowserRouter([
   {
