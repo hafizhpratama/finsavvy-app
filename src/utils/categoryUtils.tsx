@@ -28,7 +28,7 @@ export const categoryConfig = {
   Insurance: { icon: MdSecurity, color: '#FF597B' },
   Rent: { icon: MdHome, color: '#F273E6' },
   'Outcome Other': { icon: MdAttachMoney, color: '#E55604' },
-  'Cleaning Household': { icon: MdCleaningServices, color: '#FEFAF6' },
+  'Cleaning Household': { icon: MdCleaningServices, color: '#1A4D2E' },
   Houseware: { icon: MdHouse, color: '#124076' },
 }
 

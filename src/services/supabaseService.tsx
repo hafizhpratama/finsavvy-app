@@ -113,6 +113,7 @@ export async function getTransactionsByCategoryAndDate(
   if (filterDate && filterDate.startDate && filterDate.endDate) {
     query.gte('date', filterDate.startDate).lte('date', filterDate.endDate)
   }
+  query.order('date', { ascending: false })
   return await handleQuery<Transaction[]>(query)
 }
 
