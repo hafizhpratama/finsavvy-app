@@ -240,7 +240,7 @@ const DashboardPage: React.FC = () => {
 
           <Card title="Spending Chart">
             <div className="mb-4 flex justify-between rounded-lg border-2 border-solid border-gray-300">
-              <Datepicker value={filterDate} onChange={handleValueChange} separator={'~'} displayFormat={'DD/MM/YYYY'} />
+              <Datepicker readOnly value={filterDate} onChange={handleValueChange} separator={'~'} displayFormat={'DD/MM/YYYY'} />
             </div>
             <div className="mb-4">
               <Select value={selectedFilter} id="filter" label="Type" onChange={(e) => handleFilterChange(e || '')} className="w-full">

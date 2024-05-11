@@ -84,7 +84,7 @@ const TransactionsPage: React.FC = () => {
         <Balance refreshData={refreshData} />
         <Card title="Filter">
           <div className="mb-4 flex justify-between rounded-lg border-2 border-solid border-gray-300">
-            <Datepicker useRange value={filterDate} onChange={handleValueChange} />
+            <Datepicker readOnly useRange value={filterDate} onChange={handleValueChange} />
           </div>
         </Card>
         <Card title="Flow">
