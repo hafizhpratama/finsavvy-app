@@ -18,14 +18,14 @@ async function handleQuery<T>(query: any): Promise<T | null> {
 // Add transactions
 export async function addTransaction(data: Transaction, user: User | null | undefined) {
   if (!data || !user) throw new Error('Data or user is missing')
-  const { error } = await supabase.from('transaction').insert([{ ...data, user_id: user.id }])
+  const { error } = await supabase.from('transactions').insert([{ ...data, user_id: user.id }])
   if (error) throw error
   return { success: true }
 }
 
 // Retrieve transactions by user ID
 export async function getTransactionsByUserId(userId: string, filterDate?: DateValueType): Promise<Transaction[] | null> {
-  const query = supabase.from('transaction').select('*').eq('user_id', userId).is('deleted_at', null)
+  const query = supabase.from('transactions').select('*').eq('user_id', userId).is('deleted_at', null)
   if (filterDate) query.gte('date', filterDate.startDate).lte('date', filterDate.endDate)
   query.order('date', { ascending: false })
   query.order('total', { ascending: false })
@@ -35,7 +35,7 @@ export async function getTransactionsByUserId(userId: string, filterDate?: DateV
 // Update transaction
 export async function updateTransaction(transactionId: number, newData: Partial<Transaction>, user: User | null | undefined) {
   if (!transactionId || !newData || !user) throw new Error('Transaction ID, data, or user is missing')
-  const { error } = await supabase.from('transaction').update(newData).eq('id', transactionId).eq('user_id', user.id)
+  const { error } = await supabase.from('transactions').update(newData).eq('id', transactionId).eq('user_id', user.id)
   if (error) throw error
   return { success: true }
 }
@@ -43,7 +43,7 @@ export async function updateTransaction(transactionId: number, newData: Partial<
 // Delete transaction
 export async function deleteTransaction(transactionId: number, user: User | null | undefined) {
   if (!transactionId || !user) throw new Error('Transaction ID or user is missing')
-  const { error } = await supabase.from('transaction').update({ deleted_at: new Date() }).eq('id', transactionId).eq('user_id', user.id)
+  const { error } = await supabase.from('transactions').update({ deleted_at: new Date() }).eq('id', transactionId).eq('user_id', user.id)
   if (error) throw error
   return { success: true }
 }
@@ -51,7 +51,7 @@ export async function deleteTransaction(transactionId: number, user: User | null
 // Retrieve top spending categories
 export async function getTopSpendingCategories(userId: string, filterDate?: DateValueType): Promise<CategorySummary[] | null> {
   const query = supabase
-    .from('transaction')
+    .from('transactions')
     .select('category_id, total')
     .eq('user_id', userId)
     .eq('category_type', 'outcome')
@@ -111,7 +111,7 @@ export async function getTransactionsByCategoryAndDate(
   categoryId?: string,
   filterDate?: DateValueType,
 ): Promise<Transaction[] | null> {
-  const query = supabase.from('transaction').select('*').eq('user_id', userId).eq('category_id', categoryId).is('deleted_at', null)
+  const query = supabase.from('transactions').select('*').eq('user_id', userId).eq('category_id', categoryId).is('deleted_at', null)
   if (filterDate && filterDate.startDate && filterDate.endDate) {
     query.gte('date', filterDate.startDate).lte('date', filterDate.endDate)
   }
@@ -122,7 +122,7 @@ export async function getTransactionsByCategoryAndDate(
 // Retrieve pie chart data by user ID
 export async function getPieChartDataByUserId(userId: string, filterDate?: DateValueType, type?: string): Promise<PieChartEntry[] | null> {
   try {
-    let query = supabase.from('transaction').select('*').eq('user_id', userId).is('deleted_at', null)
+    let query = supabase.from('transactions').select('*').eq('user_id', userId).is('deleted_at', null)
 
     if (type) {
       query.eq('category_type', type)
@@ -192,7 +192,7 @@ export async function getBarChartDataByUserId(userId: string, selectedYear?: num
   const startOfYear = `${selectedYear}-01-01T00:00:00Z`
   const endOfYear = `${selectedYear}-12-31T23:59:59Z`
 
-  const query = supabase.from('transaction').select('*').eq('user_id', userId).is('deleted_at', null)
+  const query = supabase.from('transactions').select('*').eq('user_id', userId).is('deleted_at', null)
 
   if (selectedYear) {
     query.gte('date', startOfYear).lte('date', endOfYear)

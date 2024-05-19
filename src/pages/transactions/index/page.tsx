@@ -128,7 +128,9 @@ const filterTransactions = (transactions: Transaction[], categoryType: string): 
 
 // Helper function to get total amount from a list of transactions
 const getTotalAmount = (transactionList: Transaction[]): number => {
-  return transactionList.reduce((total, transaction) => total + (transaction.total || 0), 0)
+  return transactionList
+    .filter((transaction) => transaction.category_type === 'outcome')
+    .reduce((total, transaction) => total + (transaction.total || 0), 0)
 }
 
 // Functional component for displaying flow totals
