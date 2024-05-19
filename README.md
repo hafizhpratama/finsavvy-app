@@ -1,30 +1,48 @@
-# React + TypeScript + Vite
+# Finnsavy
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Finnsavy is a finance management application designed to help individuals efficiently track, manage, and optimize their finances. Whether you're budgeting, tracking expenses, or planning for the future, Finnsavy provides intuitive tools to streamline your financial tasks.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Expense Tracking:** Easily record and categorize your expenses to gain insights into your spending habits.
+- **Budget Management:** Set budgets for different categories and track your progress effortlessly.
+- **Income Management:** Keep track of your income sources and monitor your cash flow.
+- **Secure and Private:** Your financial data is encrypted and securely stored, ensuring your privacy and confidentiality.
 
-## Expanding the ESLint configuration
+## Installation
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+1. Clone the repository from GitHub:
 
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
+```bash
+git clone https://github.com/hafizhpratama/finsavvy-app.git
 ```
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+2. Install dependencies:
+
+```bash
+npm install
+```
+
+3. Start the application:
+
+```bash
+npm run dev
+```
+
+4. Open your browser and navigate to `http://localhost:5173` to access Finnsavy.
+
+## Technologies Used
+
+- React.js
+- Node.js
+- Vite
+- Typescript
+- Supabase
+
+## Contributing
+
+Contributions are welcome! If you have any suggestions, bug reports, or feature requests, please feel free to open an issue or submit a pull request.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
