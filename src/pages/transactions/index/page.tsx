@@ -90,8 +90,8 @@ const TransactionsPage: React.FC = () => {
         <Card title="Flow">
           <FlowDisplay
             isLoading={isLoading}
-            inflowTotal={getTotalAmount(inflowTransactions)}
-            outflowTotal={getTotalAmount(outflowTransactions)}
+            inflowTotal={getTotalAmount(inflowTransactions, 'income')}
+            outflowTotal={getTotalAmount(outflowTransactions, 'outcome')}
           />
         </Card>
         <Card title="Transactions">
@@ -127,9 +127,9 @@ const filterTransactions = (transactions: Transaction[], categoryType: string): 
 }
 
 // Helper function to get total amount from a list of transactions
-const getTotalAmount = (transactionList: Transaction[]): number => {
+const getTotalAmount = (transactionList: Transaction[], categoryType: string): number => {
   return transactionList
-    .filter((transaction) => transaction.category_type === 'outcome')
+    .filter((transaction) => transaction.category_type === categoryType)
     .reduce((total, transaction) => total + (transaction.total || 0), 0)
 }
 
@@ -213,7 +213,7 @@ const TransactionGroup: React.FC<{ transactions: Transaction[]; onTransactionCli
     ))}
     <div className="flex items-center justify-between py-2">
       <Typography className="text-sm font-semibold text-black">Total</Typography>
-      <Typography className="text-sm font-semibold text-black">Rp. {getTotalAmount(transactions).toLocaleString()}</Typography>
+      <Typography className="text-sm font-semibold text-black">Rp. {getTotalAmount(transactions, 'outcome').toLocaleString()}</Typography>
     </div>
   </div>
 )
