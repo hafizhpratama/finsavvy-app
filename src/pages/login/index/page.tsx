@@ -10,7 +10,7 @@ const useRedirectToDashboard = (session: Session | null) => {
 
   useEffect(() => {
     if (session) {
-      navigate('/')
+      navigate('/dashboard')
     }
   }, [session, navigate])
 }

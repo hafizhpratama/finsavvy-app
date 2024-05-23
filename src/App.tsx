@@ -8,10 +8,15 @@ import ErrorBoundary from './components/ErrorBoundary'
 import TransactionsPage from './pages/transactions/index/page'
 import OfflineModal from './components/UI/Modal/OfflineModal'
 import ProtectedRoute from './utils/ProtectedRoute'
+import LandingPage from './pages/landing/page'
 
 const router = createBrowserRouter([
   {
     path: '/',
+    element: <LandingPage />,
+  },
+  {
+    path: '/dashboard',
     element: (
       <ProtectedRoute>
         <DashboardPage />
@@ -69,7 +74,7 @@ function App() {
     <>
       {showOfflineModal && <OfflineModal onClose={handleCloseModal} />}
       <AuthProvider>
-        <div className="inset-0 bg-gray-100 py-4">
+        <div className="inset-0 bg-gray-100">
           <RouterProvider router={router} />
         </div>
       </AuthProvider>

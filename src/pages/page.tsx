@@ -43,7 +43,7 @@ const IndexPage: React.FC<IndexPageProps> = ({ children, refreshData, sendAlertM
   }
 
   return (
-    <div>
+    <div className="py-4">
       <div className="mb-2 mr-4 flex justify-end">
         <div className="relative">
           <div
@@ -74,8 +74,8 @@ const IndexPage: React.FC<IndexPageProps> = ({ children, refreshData, sendAlertM
       <div className="fixed bottom-2 left-1/2 z-50 h-14 w-11/12 max-w-lg -translate-x-1/2 rounded-full border border-gray-200 bg-white dark:border-gray-600 dark:bg-gray-700">
         <div className="mx-auto grid h-full max-w-lg grid-cols-3">
           <Link
-            to="/"
-            className={`group inline-flex flex-col items-center justify-center rounded-s-full px-5 ${location.pathname === '/' ? 'bg-green-50' : 'bg-white hover:bg-gray-50'}`}
+            to="/dashboard"
+            className={`group inline-flex flex-col items-center justify-center rounded-s-full px-5 ${location.pathname === '/dashboard' ? 'bg-green-50' : 'bg-white hover:bg-gray-50'}`}
           >
             <FaHome size={24} className="text-gray-400" />
             <span className="sr-only">Home</span>
