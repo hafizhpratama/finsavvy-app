@@ -12,6 +12,7 @@ import {
   getTransactionsByCategoryAndDate,
   getPieChartDataByUserId,
   getBarChartDataByUserId,
+  getIncomeCategories,
 } from '../../services/supabaseService'
 import { useAuth } from '../../contexts/AuthContext'
 import IndexPage from '../page'
@@ -22,8 +23,8 @@ import { getCategoryColor, getCategoryIcon } from '../../utils/categoryUtils'
 const DashboardPage: React.FC = () => {
   const { user } = useAuth()
   const today = new Date()
-  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
-  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0)
+  const startOfMonth = new Date(today.getFullYear(), today.getMonth() - 1, 26)
+  const endOfMonth = new Date(today.getFullYear(), today.getMonth(), 26)
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [selectedYear, setSelectedYear] = useState<number>(today.getFullYear())
   const [refreshData, setRefreshData] = useState<boolean>(false)
@@ -43,6 +44,10 @@ const DashboardPage: React.FC = () => {
     { category_id?: string; title: string; total: number; percentage: number; color: string }[] | null
   >([])
 
+  const [incomeData, setIncomeData] = useState<
+    { category_id?: string; title: string; total: number; percentage: number; color: string }[] | null
+  >([])
+
   const handleRefreshData = () => setRefreshData((prevState) => !prevState)
 
   const handleValueChange = (value: DateValueType) => {
@@ -58,8 +63,11 @@ const DashboardPage: React.FC = () => {
       try {
         setIsLoading(true)
         const userId = user?.id || ''
-        const data = await getTopSpendingCategories(userId, filterDate)
-        setTopSpendingData(data ?? [])
+        const dataTopSpending = await getTopSpendingCategories(userId, filterDate)
+        setTopSpendingData(dataTopSpending ?? [])
+
+        const dataIncome = await getIncomeCategories(userId, filterDate)
+        setIncomeData(dataIncome ?? [])
       } catch (error: any) {
         setError(error?.message || 'An error occurred')
       } finally {
@@ -238,7 +246,7 @@ const DashboardPage: React.FC = () => {
             )}
           </Card>
 
-          <Card title="Spending Chart">
+          <Card title="Chart">
             <div className="mb-4 flex justify-between rounded-lg border-2 border-solid border-gray-300">
               <Datepicker readOnly value={filterDate} onChange={handleValueChange} separator={'~'} displayFormat={'DD/MM/YYYY'} />
             </div>
@@ -275,61 +283,119 @@ const DashboardPage: React.FC = () => {
             )}
           </Card>
 
-          <Card title="Top Spending">
-            <div>
-              {isLoading ? (
-                <>
-                  {[...Array(3)].map((_, index) => (
-                    <div key={index} className="mb-4 flex animate-pulse items-center gap-8">
-                      <div className="grid h-14 w-14 place-items-center rounded-full bg-gray-300"></div>
-                      <div className="w-full">
-                        <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
-                          &nbsp;
-                        </Typography>
-                        <Typography as="div" variant="h1" className="mb-2 h-6 bg-gray-300">
-                          &nbsp;
-                        </Typography>
+          {selectedFilter === 'income' ? (
+            <Card title="Income">
+              <div>
+                {isLoading ? (
+                  <>
+                    {[...Array(3)].map((_, index) => (
+                      <div key={index} className="mb-4 flex animate-pulse items-center gap-8">
+                        <div className="grid h-14 w-14 place-items-center rounded-full bg-gray-300"></div>
+                        <div className="w-full">
+                          <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
+                            &nbsp;
+                          </Typography>
+                          <Typography as="div" variant="h1" className="mb-2 h-6 bg-gray-300">
+                            &nbsp;
+                          </Typography>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </>
-              ) : (
-                // @ts-ignore
-                <List>
-                  {topSpendingData && topSpendingData.length > 0 ? (
-                    topSpendingData.map((item, index) => {
-                      const IconComponent = getCategoryIcon(item.title)
-                      const iconColor = getCategoryColor(item.title)
-                      return (
-                        // @ts-ignore
-                        <ListItem
-                          key={index}
-                          className="flex items-center"
-                          onClick={() => handleListItemClick(item.category_id, filterDate)}
-                        >
-                          {/* @ts-ignore */}
-                          <ListItemPrefix>
-                            <IconComponent className="text-3xl" style={{ color: iconColor }} />
-                          </ListItemPrefix>
-                          <div className="ml-2 flex flex-col">
-                            <Typography className="text-sm font-semibold text-black">
-                              {item.title === 'Other' ? 'Outcome Other' : item.title}
-                            </Typography>
-                            <Typography className="text-xs font-normal text-gray-500">Rp. {item.total.toLocaleString()}</Typography>
-                          </div>
-                          <div className="ml-auto">
-                            <Typography className="text-xs font-semibold text-black">{item.percentage.toFixed(1)} %</Typography>
-                          </div>
-                        </ListItem>
-                      )
-                    })
-                  ) : (
-                    <span className="py-16 text-center text-sm font-normal text-gray-500">No data available today.</span>
-                  )}
-                </List>
-              )}
-            </div>
-          </Card>
+                    ))}
+                  </>
+                ) : (
+                  // @ts-ignore
+                  <List>
+                    {incomeData && incomeData.length > 0 ? (
+                      incomeData.map((item, index) => {
+                        const IconComponent = getCategoryIcon(item.title)
+                        const iconColor = getCategoryColor(item.title)
+                        return (
+                          // @ts-ignore
+                          <ListItem
+                            key={index}
+                            className="flex items-center"
+                            onClick={() => handleListItemClick(item.category_id, filterDate)}
+                          >
+                            {/* @ts-ignore */}
+                            <ListItemPrefix>
+                              <IconComponent className="text-3xl" style={{ color: iconColor }} />
+                            </ListItemPrefix>
+                            <div className="ml-2 flex flex-col">
+                              <Typography className="text-sm font-semibold text-black">
+                                {item.title === 'Other' ? 'Outcome Other' : item.title}
+                              </Typography>
+                              <Typography className="text-xs font-normal text-gray-500">Rp. {item.total.toLocaleString()}</Typography>
+                            </div>
+                            <div className="ml-auto">
+                              <Typography className="text-xs font-semibold text-black">{item.percentage.toFixed(1)} %</Typography>
+                            </div>
+                          </ListItem>
+                        )
+                      })
+                    ) : (
+                      <span className="py-16 text-center text-sm font-normal text-gray-500">No data available today.</span>
+                    )}
+                  </List>
+                )}
+              </div>
+            </Card>
+          ) : (
+            <Card title="Top Spending">
+              <div>
+                {isLoading ? (
+                  <>
+                    {[...Array(3)].map((_, index) => (
+                      <div key={index} className="mb-4 flex animate-pulse items-center gap-8">
+                        <div className="grid h-14 w-14 place-items-center rounded-full bg-gray-300"></div>
+                        <div className="w-full">
+                          <Typography as="div" variant="h1" className="mb-4 h-6 bg-gray-300">
+                            &nbsp;
+                          </Typography>
+                          <Typography as="div" variant="h1" className="mb-2 h-6 bg-gray-300">
+                            &nbsp;
+                          </Typography>
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                ) : (
+                  // @ts-ignore
+                  <List>
+                    {topSpendingData && topSpendingData.length > 0 ? (
+                      topSpendingData.map((item, index) => {
+                        const IconComponent = getCategoryIcon(item.title)
+                        const iconColor = getCategoryColor(item.title)
+                        return (
+                          // @ts-ignore
+                          <ListItem
+                            key={index}
+                            className="flex items-center"
+                            onClick={() => handleListItemClick(item.category_id, filterDate)}
+                          >
+                            {/* @ts-ignore */}
+                            <ListItemPrefix>
+                              <IconComponent className="text-3xl" style={{ color: iconColor }} />
+                            </ListItemPrefix>
+                            <div className="ml-2 flex flex-col">
+                              <Typography className="text-sm font-semibold text-black">
+                                {item.title === 'Other' ? 'Outcome Other' : item.title}
+                              </Typography>
+                              <Typography className="text-xs font-normal text-gray-500">Rp. {item.total.toLocaleString()}</Typography>
+                            </div>
+                            <div className="ml-auto">
+                              <Typography className="text-xs font-semibold text-black">{item.percentage.toFixed(1)} %</Typography>
+                            </div>
+                          </ListItem>
+                        )
+                      })
+                    ) : (
+                      <span className="py-16 text-center text-sm font-normal text-gray-500">No data available today.</span>
+                    )}
+                  </List>
+                )}
+              </div>
+            </Card>
+          )}
         </div>
         {showModal && <ViewTransactionModal closeModal={handleCloseModal} transactions={selectedItem} isLoading={isLoading} />}
       </IndexPage>

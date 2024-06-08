@@ -105,6 +105,63 @@ export async function getTopSpendingCategories(userId: string, filterDate?: Date
   return categorySpendingArray
 }
 
+// Retrieve top spending categories
+export async function getIncomeCategories(userId: string, filterDate?: DateValueType): Promise<CategorySummary[] | null> {
+  const query = supabase
+    .from('transactions')
+    .select('category_id, total')
+    .eq('user_id', userId)
+    .eq('category_type', 'income')
+    .is('deleted_at', null)
+  if (filterDate && filterDate.startDate && filterDate.endDate) {
+    query.gte('date', filterDate.startDate).lte('date', filterDate.endDate)
+  }
+  const transactions = await handleQuery<Transaction[]>(query)
+  if (!transactions) return null
+
+  const categorySpendingMap = new Map<string, number>()
+  let totalSpending = 0
+
+  transactions.forEach((transaction) => {
+    const { category_id, total } = transaction
+    if (category_id && total) {
+      totalSpending += total
+      categorySpendingMap.set(category_id.toString(), (categorySpendingMap.get(category_id.toString()) || 0) + total)
+    }
+  })
+
+  const categoriesData = await handleQuery<Category[]>(supabase.from('categories').select('id, name'))
+  if (!categoriesData) return null
+
+  const categoryNamesMap = new Map<string, string>()
+  categoriesData.forEach((category) => {
+    categoryNamesMap.set(category.id.toString(), category.name)
+  })
+
+  const categorySpendingArray: CategorySummary[] = []
+
+  for (const [categoryId, total] of categorySpendingMap.entries()) {
+    let categoryName = categoryNamesMap.get(categoryId)
+    if (categoryName === 'Other') {
+      categoryName = 'Outcome Other'
+    }
+    if (categoryName) {
+      const percentage = ((total / totalSpending) * 100).toFixed(1)
+      categorySpendingArray.push({
+        category_id: categoryId,
+        title: categoryName,
+        total,
+        percentage: parseFloat(percentage),
+        color: getCategoryColor(categoryName),
+      })
+    }
+  }
+
+  categorySpendingArray.sort((a, b) => b.total - a.total)
+
+  return categorySpendingArray
+}
+
 // Retrieve transactions by category and date
 export async function getTransactionsByCategoryAndDate(
   userId?: string,

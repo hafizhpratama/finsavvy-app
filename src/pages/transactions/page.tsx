@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react'
-import { useAuth } from '../../../contexts/AuthContext'
-import { getTransactionsByUserId } from '../../../services/supabaseService'
-import Balance from '../../../components/Balance'
-import Card from '../../../components/UI/Card'
-import IndexPage from '../../page'
-import Typography from '../../../components/UI/Typography'
-import ErrorBoundary from '../../../components/ErrorBoundary'
 import Datepicker, { DateValueType } from 'react-tailwindcss-datepicker'
-import { Alert } from '@material-tailwind/react'
 import { BiCheckCircle } from 'react-icons/bi'
-import UpdateTransactionModal from '../../../components/UI/Modal/UpdateTransactionModal'
+import { useAuth } from '../../contexts/AuthContext'
+import { getTransactionsByUserId } from '../../services/supabaseService'
+import ErrorBoundary from '../../components/ErrorBoundary'
+import IndexPage from '../page'
+import Balance from '../../components/Balance'
+import Card from '../../components/UI/Card'
+import UpdateTransactionModal from '../../components/UI/Modal/UpdateTransactionModal'
+import Typography from '../../components/UI/Typography'
+import { Alert } from '@material-tailwind/react'
 
 const TransactionsPage: React.FC = () => {
   const { user } = useAuth()
@@ -22,8 +22,9 @@ const TransactionsPage: React.FC = () => {
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const today = new Date()
-  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
-  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0)
+  const startOfMonth = new Date(today.getFullYear(), today.getMonth() - 1, 26)
+  const endOfMonth = new Date(today.getFullYear(), today.getMonth(), 26)
+
   const [filterDate, setFilterDate] = useState<DateValueType>({
     startDate: startOfMonth.toISOString().split('T')[0],
     endDate: endOfMonth.toISOString().split('T')[0],

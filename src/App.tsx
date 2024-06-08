@@ -5,10 +5,10 @@ import { AuthProvider } from './contexts/AuthContext'
 import DashboardPage from './pages/dashboard/page'
 import LoginPage from './pages/login/index/page'
 import ErrorBoundary from './components/ErrorBoundary'
-import TransactionsPage from './pages/transactions/index/page'
 import OfflineModal from './components/UI/Modal/OfflineModal'
 import ProtectedRoute from './utils/ProtectedRoute'
 import LandingPage from './pages/landing/page'
+import TransactionsPage from './pages/transactions/page'
 
 const router = createBrowserRouter([
   {
